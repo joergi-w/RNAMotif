@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+declare -i number
+number = 0
 #for filename in /home/kenny/data/seeds/*.seed; do
 #  # strip pre and suffix
 #  filename_nopath="${filename##*/}"
@@ -31,6 +33,7 @@ for full in ~/gen_pos/*; do
 #check if file is empty
   if [ -s "$full"/"$filename".msa ]
   then
+    ((number++))
     cd ~/server_results/likeMaster/ || exit
 
     ~/server_results/likeMaster/./RNAMotif "$full"/"$filename".msa "$full"/"$filename".fa -r "$full"/"$filename".pos
@@ -50,5 +53,5 @@ for full in ~/gen_pos/*; do
   fi
 done
 # calculuate spec and sens for each family and plot average over all for each stat profile-> safe fig
-
+echo "${number} families processed"
 cd /server_results/scripts/ && python3 spec_spec.py
