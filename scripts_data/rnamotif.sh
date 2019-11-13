@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-counter= 0
 #for filename in /home/kenny/data/seeds/*.seed; do
 #  # strip pre and suffix
 #  filename_nopath="${filename##*/}"
@@ -29,18 +28,26 @@ for full in ~/gen_pos/*; do
 #  cd ~/server_results/likeMaster/ || exit
 # ~/server_results/likeMaster/./RNAMotif
 
-  cd ~/server_results/likeMaster/ || exit
+#check if file is empty
+  if [ -s "$full"/"$filename".msa ]
+  then
+    cd ~/server_results/likeMaster/ || exit
 
-  ~/server_results/likeMaster/./RNAMotif "$full"/"$filename".msa "$full"/"$filename".fa -r "$full"/"$filename".pos
-  for filter in "${arr[@]}"; do
-    #mv "$filter".txt "$full"/results
-    # shellcheck disable=SC2046
-    # RNAMotif creates for each Family for every stat profile one output file in the current dir
-    # move them into their desired folder
-    mv  ~/server_results/likeMaster/*"$filter".txt ~/server_results/likeMaster/"$filter"
+    ~/server_results/likeMaster/./RNAMotif "$full"/"$filename".msa "$full"/"$filename".fa -r "$full"/"$filename".pos
+    for filter in "${arr[@]}"; do
+      #mv "$filter".txt "$full"/results
+      # shellcheck disable=SC2046
+      # RNAMotif creates for each Family for every stat profile one output file in the current dir
+      # move them into their desired folder
+      mv  ~/server_results/likeMaster/*"$filter".txt ~/server_results/likeMaster/"$filter"
 
-  done
+    done
 
+
+  else
+    echo "NO INFERNAL FILE CREATED .. SKIP FAMILY"
+
+  fi
 done
 # calculuate spec and sens for each family and plot average over all for each stat profile-> safe fig
 
