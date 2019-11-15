@@ -54,4 +54,4 @@ for full in ~/gen_pos/*; do
 done
 # calculuate spec and sens for each family and plot average over all for each stat profile-> safe fig
 echo "${number} families processed"
-cd /server_results/scripts/ && python3 spec_spec.py
+cd ~/server_results/scripts/ && python3 spec_spec.py
