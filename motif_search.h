@@ -1479,7 +1479,7 @@ std::vector<seqan::Tuple<int, 3> > findFamilyMatches(seqan::StringSet<TStringTyp
 
 	for (int k=0; k < freqs.size(); ++k){
 		std::stringstream fpath;
-		fpath << "stats_" << freqs[k] << ".txt";
+		fpath << motifs[0]->header.at("AC") << "_stats_" << freqs[k] << ".txt";
 
 		omp_lock_t writelock;
 		omp_init_lock(&writelock);
