@@ -14,13 +14,16 @@ number = 0
   #echo "put ${filename}"
 #   done
 #   echo "$counter"
+
+# cmake /home/mi/moke/sharefolder/repo/RNAMotif/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-6 -DCMAKE_C_COMPILER=gcc-6
+
 declare -a arr=("stats_0" "stats_0.02" "stats_0.04" "stats_0.06" "stats_0.08" "stats_0.1" "stats_0.12" "stats_0.14" "stats_0.16" "stats_0.18" "stats_0.2")
 echo "move files..."
 
-for full in ~/gen_pos/*; do
-  echo "${full##*/} gets processed"
-
+for full in /home/mi/moke/sharefolder/data/gen_pos/*; do
   filename="${full##*/}"
+  echo "${filename} gets processed"
+
   # filename="${filename%.*}"
   # echo "$full"/"$filename"
   # create result dict
@@ -34,17 +37,17 @@ for full in ~/gen_pos/*; do
   if [ -s "$full"/"$filename".msa ]
   then
     ((number++))
-    cd ~/server_results/likeMaster/ || exit
+    #cd ~/server_results/likeMaster/ || exit
 
-    ~/server_results/likeMaster/./RNAMotif "$full"/"$filename".msa "$full"/"$filename".fa -r "$full"/"$filename".pos
-    for filter in "${arr[@]}"; do
+    #~/server_results/likeMaster/./RNAMotif "$full"/"$filename".msa "$full"/"$filename".fa -r "$full"/"$filename".pos
+    #for filter in "${arr[@]}"; do
       #mv "$filter".txt "$full"/results
       # shellcheck disable=SC2046
       # RNAMotif creates for each Family for every stat profile one output file in the current dir
       # move them into their desired folder
-      mv  ~/server_results/likeMaster/*"$filter".txt ~/server_results/likeMaster/"$filter"
+      #mv  ~/server_results/likeMaster/*"$filter".txt ~/server_results/likeMaster/"$filter"
 
-    done
+    #done
 
 
   else
@@ -54,4 +57,4 @@ for full in ~/gen_pos/*; do
 done
 # calculuate spec and sens for each family and plot average over all for each stat profile-> safe fig
 echo "${number} families processed"
-cd ~/server_results/scripts/ && python3 spec_spec.py
+#cd ~/server_results/scripts/ && python3 spec_spec.py
