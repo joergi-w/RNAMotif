@@ -12,8 +12,8 @@ message (STATUS "Configuring apps/RNAMotif")
 
 ENABLE_LANGUAGE(C)
 
-set(CMAKE_MODULE_PATH $ENV{HOME}/Entwicklung/seqan/util/cmake)
-set(SEQAN_INCLUDE_PATH $ENV{HOME}/Entwicklung/seqan/include)
+set(CMAKE_MODULE_PATH /storage/mi/moke/rnamotif/repo/seqan/util/cmake)
+set(SEQAN_INCLUDE_PATH /storage/mi/moke/rnamotif/repo/seqan/include)
 
 # ----------------------------------------------------------------------------
 # Dependencies
@@ -28,7 +28,7 @@ find_package (SeqAn REQUIRED)
 
 # Add include directories.
 include_directories (${SEQAN_INCLUDE_DIRS_MAIN})
-include_directories ("/usr/include/ViennaRNA")
+include_directories ("/storage/mi/moke/rnamotif/opt/include")
 include_directories (SYSTEM ${SEQAN_INCLUDE_DIRS_DEPS})
 include_directories ("folding_utils/ipknot")
 
@@ -49,7 +49,7 @@ add_executable (RNAMotif RNAMotif.cpp motif.h motif_structures.h motif_search.h 
 
 # Add dependencies found by find_package (SeqAn).
 #target_link_libraries (RNAMotif ${SEQAN_LIBRARIES} "/usr/lib/x86_64-linux-gnu/libRNA.a" glpk gmp)
-target_link_libraries (RNAMotif ${SEQAN_LIBRARIES} "$ENV{HOME}/opt/lib/libRNA.a" glpk gmp)
+target_link_libraries (RNAMotif ${SEQAN_LIBRARIES} "/storage/mi/moke/rnamotif/opt/lib/libRNA.a" glpk gmp)
 
 # Add CXX flags found by find_package (SeqAn).
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SEQAN_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
