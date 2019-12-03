@@ -56,86 +56,41 @@
 #include "stockholm_file.h"
 #include "stockholm_io.h"
 
-// -----------
+// (JW) the following is unused
 
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <sys/time.h>
-#include <ctime>
-#endif
-
-/* Returns the amount of milliseconds elapsed since the UNIX epoch. Works on both
- * windows and linux. */
-
-uint64_t GetTimeMs64()
-{
-#ifdef _WIN32
- /* Windows */
- FILETIME ft;
- LARGE_INTEGER li;
-
- /* Get the amount of 100 nano seconds intervals elapsed since January 1, 1601 (UTC) and copy it
-  * to a LARGE_INTEGER structure. */
- GetSystemTimeAsFileTime(&ft);
- li.LowPart = ft.dwLowDateTime;
- li.HighPart = ft.dwHighDateTime;
-
- uint64_t ret = li.QuadPart;
- ret -= 116444736000000000LL; /* Convert from file time to UNIX epoch time. */
- ret /= 10000; /* From 100 nano seconds (10^-7) to 1 millisecond (10^-3) intervals */
-
- return ret;
-#else
- /* Linux */
- struct timeval tv;
-
- gettimeofday(&tv, NULL);
-
- uint64_t ret = tv.tv_usec;
- /* Convert from micro seconds (10^-6) to milliseconds (10^-3) */
- ret /= 1000;
-
- /* Adds the seconds (10^0) after converting them to milliseconds (10^-3) */
- ret += (tv.tv_sec * 1000);
-
- return ret;
-#endif
-}
-
-int toVal(char c){
-	switch (c) {
-		case 'A':
-			return 0;
-			break;
-		case 'C':
-			return 1;
-			break;
-		case 'G':
-			return 2;
-			break;
-		case 'U':
-			return 3;
-			break;
-		default:
-			break;
-	}
-
-	return 0;
-}
-
-uint64_t hashString(std::string &rnaStr){
-	uint64_t hash = 0;
-
-	for (unsigned i=0; i < rnaStr.size(); ++i){
-		if (rnaStr[i] == '-')
-			continue;
-
-		hash = (hash << 2) + toVal(rnaStr[i]);
-	}
-
-	return hash;
-}
+//int toVal(char c){
+//	switch (c) {
+//		case 'A':
+//			return 0;
+//			break;
+//		case 'C':
+//			return 1;
+//			break;
+//		case 'G':
+//			return 2;
+//			break;
+//		case 'U':
+//			return 3;
+//			break;
+//		default:
+//			break;
+//	}
+//
+//	return 0;
+//}
+//
+//uint64_t hashString(std::string &rnaStr){
+//	uint64_t hash = 0;
+//
+//	for (unsigned i=0; i < rnaStr.size(); ++i){
+//		if (rnaStr[i] == '-')
+//			continue;
+//
+//		hash = (hash << 2) + toVal(rnaStr[i]);
+//	}
+//
+//	return hash;
+//}
 
 
 // ==========================================================================
@@ -223,181 +178,168 @@ parseCommandLine(AppOptions & options, int argc, char const ** argv)
     return seqan::ArgumentParser::PARSE_OK;
 }
 
-void outputStats(std::vector<Motif*> &motifs){
-	std::ofstream fout;
-	fout.open("output_stats.txt", std::ios_base::app | std::ios_base::out);
-	//fout.open("output_stats.txt");
+// (JW) this is unused
 
-	StructureElement tmpStruc;
+//void outputStats(std::vector<Motif*> &motifs){
+//	std::ofstream fout;
+//	fout.open("output_stats.txt", std::ios_base::app | std::ios_base::out);
+//	//fout.open("output_stats.txt");
+//
+//	StructureElement tmpStruc;
+//
+//	int c = 0;
+//	for (auto motif : motifs){
+//
+//
+//		c += 1;
+//
+//		if (motif == 0)
+//			continue;
+//
+//		int aln_len = seqan::length(seqan::row(motif->seedAlignment,0));
+//
+//		//fout << aln_len;
+//
+//		double h_none;
+//
+//		for (TStructure &structure : motif->profile){
+//			//fout << structure.prob << "\t" << structure.suboptimal << "\n";
+//
+//			//fout << "\t";
+//			//fout << (structure.pos.second - structure.pos.first) << ":" << structure.elements.size() << ":" << structure.prob;
+//			//fout << (2-loopEntropy(structure.elements.back().loopComponents)) << ":" << seqan::length(structure.elements.back().loopComponents[0]);
+//			double h_stem  = 0;
+//			double h_hair  = 0;
+//			double h_bulge = 0;
+//			double h_loop  = 0;
+//
+//			double gap_min_hair  = 0, gap_med_hair  = 0, gap_max_hair  = 0;
+//			double gap_min_loop  = 0, gap_med_loop  = 0, gap_max_loop  = 0;
+//			double gap_min_bulge = 0, gap_med_bulge = 0, gap_max_bulge = 0;
+//			double gap_min_stem  = 0, gap_med_stem  = 0, gap_max_stem  = 0;
+//
+//			int n_stem  = 0;
+//			int n_hair  = 0;
+//			int n_bulge = 0;
+//			int n_loop  = 0;
+//
+//			h_none = (seqan::length(motif->externalBases) > 0) ? loopEntropy(motif->externalBases) : -1;
+//
+//			bool a1=false,a2=false,a3=false,a4=false;
+//
+//			//std::cout << "(" << structure.pos.first << "," << structure.pos.second << ")";
+//
+//			for (StructureElement &element: structure.elements){
+//				double elemLen = seqan::length(element.loopComponents);
+//
+//				//std::cout << element.statistics[0].min_length << "- min\n";
+//				//std::cout << element.statistics[0].mean_length << "- mean\n";
+//				//std::cout << element.statistics[0].max_length << "- max\n";
+//				//std::cout << elemLen << "- N\n";
+//
+//				double min  = element.statistics.min_length /elemLen;
+//				double mean = element.statistics.mean_length/elemLen;
+//				double max  = element.statistics.max_length /elemLen;
+//
+//				/*
+//				if (element.statistics.size() > 1){
+//					double elemLen2 = seqan::length(element.loopComponents[1]);
+//					min  += element.statistics[1].min_length /elemLen2;
+//					mean += element.statistics[1].mean_length/elemLen2;
+//					max  += element.statistics[1].max_length /elemLen2;
+//
+//					min  = min/2;
+//					mean = mean/2;
+//					max  = max/2;
+//				}
+//				*/
+//
+//				switch (element.type) {
+//					case StructureType::HAIRPIN:
+//						++n_hair;
+//						h_hair += loopEntropy(element.loopComponents);
+//						a2 = true;
+//
+//						gap_min_hair += min;
+//						gap_med_hair += mean;
+//						gap_max_hair += max;
+//						break;
+//					case StructureType::LOOP:
+//						++n_loop;
+//						h_loop += loopEntropy(element.loopComponents);
+//						a3 = true;
+//
+//						gap_min_loop += min;
+//						gap_med_loop += mean;
+//						gap_max_loop += max;
+//						break;
+//					case StructureType::LBULGE:
+//					case StructureType::RBULGE:
+//						++n_bulge;
+//						h_bulge += loopEntropy(element.loopComponents);
+//						a4 = true;
+//
+//						gap_min_bulge += min;
+//						gap_med_bulge += mean;
+//						gap_max_bulge += max;
+//						break;
+//					case StructureType::STEM:
+//						++n_stem;
+//						h_stem += stemEntropy(element.stemProfile);
+//						a1 = true;
+//
+//						gap_min_stem += min;
+//						gap_med_stem += mean;
+//						gap_max_stem += max;
+//						break;
+//					default:
+//						break;
+//				}
+//			}
+//
+//			//std::cout << (gap_min_hair ) << ":" << (gap_med_hair  ) << ":" << (gap_max_hair  ) << "\t"
+//			//	 << (gap_min_loop ) << ":" << (gap_med_loop  ) << ":" << (gap_max_loop  ) << "\t"
+//			//	 << (gap_min_bulge) << ":" << (gap_med_bulge) << ":" << (gap_max_bulge) << "\t"
+//			//	 << (gap_min_stem  ) << ":" << (gap_med_stem  ) << ":" << (gap_max_stem  ) << "\n";
+//
+//			//std::cout << n_hair << "\t" << n_loop << "\t" << n_bulge << "\t" << n_stem << "\n";
+//
+//			//fout << (a2 ? (2-h_hair/n_hair) : -1) << ":" << (a1 ? (3-h_stem/n_stem) : -1) << ":" << (a3 ? (2-h_loop/n_loop) : -1) << ":" << (a4 ? (2-h_bulge/n_bulge) : -1);
+//
+//			//fout << gap_min_hair /n_hair  << ":" << gap_med_hair /n_hair << ":" << gap_max_hair /n_hair << "|"
+//			//	 << gap_min_loop /n_loop  << ":" << gap_med_loop /n_loop << ":" << gap_max_loop /n_loop << "|"
+//			//	 << gap_min_bulge/n_bulge << ":" << gap_med_bulge/n_bulge<< ":" << gap_max_bulge/n_bulge<< "|"
+//			//	 << gap_min_stem /n_stem << ":" << gap_med_stem /n_stem << ":" << gap_max_stem /n_stem;
+//
+//			//fout << (a2 ? (gap_min_hair /n_hair ) : -1) << ":" << (a2 ? (gap_med_hair /n_hair ) : -1) << ":" << (a2 ? (gap_max_hair /n_hair ) : -1) << "|"
+//			//	 << (a3 ? (gap_min_loop /n_loop ) : -1) << ":" << (a3 ? (gap_med_loop /n_loop ) : -1) << ":" << (a3 ? (gap_max_loop /n_loop ) : -1) << "|"
+//			//	 << (a4 ? (gap_min_bulge/n_bulge) : -1) << ":" << (a4 ? (gap_med_bulge/n_bulge) : -1) << ":" << (a4 ? (gap_max_bulge/n_bulge) : -1) << "|"
+//			//	 << (a1 ? (gap_min_stem /n_stem ) : -1) << ":" << (a1 ? (gap_med_stem /n_stem ) : -1) << ":" << (a1 ? (gap_max_stem /n_stem ) : -1) << "\t";
+//		}
+//
+//		//fout << "\t" << (2-h_none) << "\n";
+//		//fout << motif->mcc << "\n";
+//	}
+//}
 
-	int c = 0;
-	for (auto motif : motifs){
-
-
-		c += 1;
-
-		if (motif == 0)
-			continue;
-
-		int aln_len = seqan::length(seqan::row(motif->seedAlignment,0));
-
-		//fout << aln_len;
-
-		double h_none;
-
-		for (TStructure &structure : motif->profile){
-			//fout << structure.prob << "\t" << structure.suboptimal << "\n";
-
-			//fout << "\t";
-			//fout << (structure.pos.second - structure.pos.first) << ":" << structure.elements.size() << ":" << structure.prob;
-			//fout << (2-loopEntropy(structure.elements.back().loopComponents)) << ":" << seqan::length(structure.elements.back().loopComponents[0]);
-			double h_stem  = 0;
-			double h_hair  = 0;
-			double h_bulge = 0;
-			double h_loop  = 0;
-
-			double gap_min_hair  = 0, gap_med_hair  = 0, gap_max_hair  = 0;
-			double gap_min_loop  = 0, gap_med_loop  = 0, gap_max_loop  = 0;
-			double gap_min_bulge = 0, gap_med_bulge = 0, gap_max_bulge = 0;
-			double gap_min_stem  = 0, gap_med_stem  = 0, gap_max_stem  = 0;
-
-			int n_stem  = 0;
-			int n_hair  = 0;
-			int n_bulge = 0;
-			int n_loop  = 0;
-
-			h_none = (seqan::length(motif->externalBases) > 0) ? loopEntropy(motif->externalBases) : -1;
-
-			bool a1=false,a2=false,a3=false,a4=false;
-
-			//std::cout << "(" << structure.pos.first << "," << structure.pos.second << ")";
-
-			for (StructureElement &element: structure.elements){
-				double elemLen = seqan::length(element.loopComponents);
-
-				//std::cout << element.statistics[0].min_length << "- min\n";
-				//std::cout << element.statistics[0].mean_length << "- mean\n";
-				//std::cout << element.statistics[0].max_length << "- max\n";
-				//std::cout << elemLen << "- N\n";
-
-				double min  = element.statistics.min_length /elemLen;
-				double mean = element.statistics.mean_length/elemLen;
-				double max  = element.statistics.max_length /elemLen;
-
-				/*
-				if (element.statistics.size() > 1){
-					double elemLen2 = seqan::length(element.loopComponents[1]);
-					min  += element.statistics[1].min_length /elemLen2;
-					mean += element.statistics[1].mean_length/elemLen2;
-					max  += element.statistics[1].max_length /elemLen2;
-
-					min  = min/2;
-					mean = mean/2;
-					max  = max/2;
-				}
-				*/
-
-				switch (element.type) {
-					case StructureType::HAIRPIN:
-						++n_hair;
-						h_hair += loopEntropy(element.loopComponents);
-						a2 = true;
-
-						gap_min_hair += min;
-						gap_med_hair += mean;
-						gap_max_hair += max;
-						break;
-					case StructureType::LOOP:
-						++n_loop;
-						h_loop += loopEntropy(element.loopComponents);
-						a3 = true;
-
-						gap_min_loop += min;
-						gap_med_loop += mean;
-						gap_max_loop += max;
-						break;
-					case StructureType::LBULGE:
-					case StructureType::RBULGE:
-						++n_bulge;
-						h_bulge += loopEntropy(element.loopComponents);
-						a4 = true;
-
-						gap_min_bulge += min;
-						gap_med_bulge += mean;
-						gap_max_bulge += max;
-						break;
-					case StructureType::STEM:
-						++n_stem;
-						h_stem += stemEntropy(element.stemProfile);
-						a1 = true;
-
-						gap_min_stem += min;
-						gap_med_stem += mean;
-						gap_max_stem += max;
-						break;
-					default:
-						break;
-				}
-			}
-
-			//std::cout << (gap_min_hair ) << ":" << (gap_med_hair  ) << ":" << (gap_max_hair  ) << "\t"
-			//	 << (gap_min_loop ) << ":" << (gap_med_loop  ) << ":" << (gap_max_loop  ) << "\t"
-			//	 << (gap_min_bulge) << ":" << (gap_med_bulge) << ":" << (gap_max_bulge) << "\t"
-			//	 << (gap_min_stem  ) << ":" << (gap_med_stem  ) << ":" << (gap_max_stem  ) << "\n";
-
-			//std::cout << n_hair << "\t" << n_loop << "\t" << n_bulge << "\t" << n_stem << "\n";
-
-			//fout << (a2 ? (2-h_hair/n_hair) : -1) << ":" << (a1 ? (3-h_stem/n_stem) : -1) << ":" << (a3 ? (2-h_loop/n_loop) : -1) << ":" << (a4 ? (2-h_bulge/n_bulge) : -1);
-
-			//fout << gap_min_hair /n_hair  << ":" << gap_med_hair /n_hair << ":" << gap_max_hair /n_hair << "|"
-			//	 << gap_min_loop /n_loop  << ":" << gap_med_loop /n_loop << ":" << gap_max_loop /n_loop << "|"
-			//	 << gap_min_bulge/n_bulge << ":" << gap_med_bulge/n_bulge<< ":" << gap_max_bulge/n_bulge<< "|"
-			//	 << gap_min_stem /n_stem << ":" << gap_med_stem /n_stem << ":" << gap_max_stem /n_stem;
-
-			//fout << (a2 ? (gap_min_hair /n_hair ) : -1) << ":" << (a2 ? (gap_med_hair /n_hair ) : -1) << ":" << (a2 ? (gap_max_hair /n_hair ) : -1) << "|"
-			//	 << (a3 ? (gap_min_loop /n_loop ) : -1) << ":" << (a3 ? (gap_med_loop /n_loop ) : -1) << ":" << (a3 ? (gap_max_loop /n_loop ) : -1) << "|"
-			//	 << (a4 ? (gap_min_bulge/n_bulge) : -1) << ":" << (a4 ? (gap_med_bulge/n_bulge) : -1) << ":" << (a4 ? (gap_max_bulge/n_bulge) : -1) << "|"
-			//	 << (a1 ? (gap_min_stem /n_stem ) : -1) << ":" << (a1 ? (gap_med_stem /n_stem ) : -1) << ":" << (a1 ? (gap_max_stem /n_stem ) : -1) << "\t";
-		}
-
-		//fout << "\t" << (2-h_none) << "\n";
-		//fout << motif->mcc << "\n";
-	}
-}
-
-template<typename Out>
-void split(const std::string &s, char delim, Out result) {
-    std::stringstream ss;
-    ss.str(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        *(result++) = item;
-    }
-}
-
-
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, std::back_inserter(elems));
-    return elems;
-}
-
-
-std::unordered_map<std::string, std::vector<RfamBenchRecord> > read_reference(seqan::CharString file, bool exclude_rev = true){
-	std::unordered_map<std::string, std::vector<RfamBenchRecord> > result;
-
+void read_reference(seqan::CharString const & file,
+                    std::unordered_map<std::string, std::vector<RfamBenchRecord>> & result,
+                    bool exclude_rev = true)
+{
 	std::ifstream infile(seqan::toCString(file));
 	std::string ID, ref, seq, start, end;
 	while (infile >> ID >> ref >> seq >> start >> end)
 	{
 		RfamBenchRecord record;
 
-		std::vector<std::string> idsplit = split(ID, '/');
-		record.ID = idsplit[0];
-		record.seq_nr = std::stoi(idsplit[1]);
+		// split ID at '/'
+		std::string::size_type pos = ID.rfind('/');
+		record.ID = ID.substr(0, pos);
+		record.seq_nr = std::stoi(ID.substr(pos + 1));
 
-		std::vector<std::string> refsplit = split(ref, 'k');
-		record.ref_nr = std::stoi(refsplit[1]);
+        // split ref at 'k'
+        pos = ref.rfind('k');
+		record.ref_nr = std::stoi(ref.substr(pos + 1));
 
 		record.seq_name = seq;
 		record.start = std::stoi(start)-2;
@@ -405,16 +347,10 @@ std::unordered_map<std::string, std::vector<RfamBenchRecord> > read_reference(se
 
 		record.reverse = record.start > record.end;
 
-		if (exclude_rev && record.reverse){
-			continue;
+		if (!record.reverse || !exclude_rev){
+    		result[record.ID].push_back(record);
 		}
-
-		result[record.ID].push_back(record);
-		//std::cout << ID << "\t" << ref << "\t" << seq << "\t" << start << "\t" << end << "\n";
-		//std::cout << record.ID << "\t" << record.seq_nr << "\t" << record.ref_nr << "\t" << record.seq_name << "\t" << record.start << "\t" << record.end << "\n";
 	}
-
-	return result;
 }
 
 // --------------------------------------------------------------------------
@@ -470,8 +406,6 @@ int main(int argc, char const ** argv)
 
     std::vector<seqan::StockholmRecord<TBaseAlphabet> > records;
 
-    uint64_t start = GetTimeMs64();
-
     seqan::StockholmFileIn stockFileIn;
     seqan::open(stockFileIn, seqan::toCString(options.rna_file));
 
@@ -482,12 +416,12 @@ int main(int argc, char const ** argv)
     }
 
     std::cout << records.size() << " records read\n";
-    std::cout << "Time: " << GetTimeMs64() - start << "ms \n";
 
-	std::vector<Motif*> motifs(records.size());
+	std::vector<Motif> motifs(records.size());
 
 	#pragma omp parallel for schedule(dynamic)
-	for (size_t k=0; k < records.size(); ++k){
+	for (size_t k=0; k < records.size(); ++k)
+	{
 		seqan::StockholmRecord<TBaseAlphabet> const &record = records[k];
 
 
@@ -515,10 +449,10 @@ int main(int argc, char const ** argv)
 		*/
 
 
-		Motif* rna_motif = new Motif();
-		rna_motif->header = record.header;
-		rna_motif->seqence_information = record.seqence_information;
-		rna_motif->seedAlignment = record.alignment;
+		Motif & rna_motif = motifs[k];
+		rna_motif.header = record.header;
+		rna_motif.seqence_information = record.seqence_information;
+		rna_motif.seedAlignment = record.alignment;
 
 		// create structure for the whole multiple alignment
 		std::cout << "Rfam:   " << record.seqence_information.at("SS_cons") << "\n";
@@ -527,13 +461,11 @@ int main(int argc, char const ** argv)
 		//#pragma omp critical
 
 		if (options.pseudoknot)
-			getConsensusStructure(*rna_motif, record, constraint_bracket, IPknotFold());
+			getConsensusStructure(rna_motif, record, constraint_bracket, IPknotFold());
 		else
-			getConsensusStructure(*rna_motif, record, constraint_bracket, RNALibFold());
+			getConsensusStructure(rna_motif, record, constraint_bracket, RNALibFold());
 
 		std::cout << "\n";
-
-		motifs[k] = rna_motif;
 
 		if (options.constrain)
 			free(constraint_bracket);
@@ -541,7 +473,7 @@ int main(int argc, char const ** argv)
 	std::unordered_map<std::string, std::vector<RfamBenchRecord> > reference_pos;
 	//outputStats(motifs);
 	if (options.reference_file != ""){
-		reference_pos = read_reference(options.reference_file);
+		read_reference(options.reference_file, reference_pos);
 	}
 	else{
 		std::cout << "No reference pos file given.\n";

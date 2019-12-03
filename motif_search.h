@@ -137,7 +137,7 @@ class ProfileCharIterImpl : public ProfileCharIter{
 
 
 public:
-	ProfileCharIterImpl (TProfileChar c, std::map<int, int> &gapMap, int charNum, std::pair<int,int> pos, int gapsLeft, int offset, THashType prev_hash, bool left, double threshold_freq=0.05)
+	ProfileCharIterImpl (TProfileChar c, std::map<int, int> const & gapMap, int charNum, std::pair<int,int> pos, int gapsLeft, int offset, THashType prev_hash, bool left, double threshold_freq=0.05)
 							: c(c), idx(char_size) {
 		this->charNum = charNum;
 		this->pos = pos;
@@ -463,11 +463,11 @@ public:
 	std::stack<ProfilePointer> state;
 	std::tuple<int, int, int> end;
 
-	StructureIterator(std::vector<StructureElement> &structure_elements, int length, bool hashLast, double threshold_freq=0.05)
+	StructureIterator(std::vector<StructureElement> const & structure_elements, int length, bool hashLast, double threshold_freq=0.05)
 		: structure_elements(structure_elements), max_length(length), threshold_freq(threshold_freq), hashLast(hashLast), end(-1,-1,-1) {
 
 		uint64_t sum = 1;
-		if (true){
+		{
 			for (StructureElement elem : structure_elements){
 				int elem_len = seqan::length(elem.loopComponents);
 				//prefix_states.push_back(std::vector<std::unordered_set<std::pair<uint8_t, THashType> > >(elem_len));
@@ -480,16 +480,16 @@ public:
 					if (elem.type != StructureType::STEM){
 						TAlphabetProfile &pchar = elem.loopComponents[i];
 						//std::cout << seqan::totalCount(pchar) << " " << threshold_freq << " - " << seqan::totalCount(pchar)*threshold_freq << "\n";
-						int count = std::count_if(std::begin(pchar.count), std::end(pchar.count), [&] (int x) {return (x > seqan::totalCount(pchar)*threshold_freq);});
-						nonzero = count;
-						std::cout << "No stem: " << count << "\n";
+						int count_ = std::count_if(std::begin(pchar.count), std::end(pchar.count), [&] (int x) {return (x > seqan::totalCount(pchar)*threshold_freq);});
+						nonzero = count_;
+						std::cout << "No stem: " << count_ << "\n";
 					}
 					else {
 						TBiAlphabetProfile &pchar = elem.stemProfile[i];
 						//std::cout << seqan::totalCount(pchar) << " " << threshold_freq << " - " << seqan::totalCount(pchar)*threshold_freq << "\n";
-						int count = std::count_if(std::begin(pchar.count), std::end(pchar.count), [&] (int x) {return (x > seqan::totalCount(pchar)*threshold_freq);});
-						nonzero = count;
-						std::cout << "Stem   : " << count << "\n";
+						int count_ = std::count_if(std::begin(pchar.count), std::end(pchar.count), [&] (int x) {return (x > seqan::totalCount(pchar)*threshold_freq);});
+						nonzero = count_;
+						std::cout << "Stem   : " << count_ << "\n";
 					}
 
 					sum *= nonzero;
@@ -521,15 +521,13 @@ public:
 
 		// return one or two characters to search, depending on the substructure
 		if (single_type){
-			if (structure_elements[element].loopLeft == false){
-			//if (prof_ptr->left){
-				ret = std::make_tuple(backtracked, -1, next_char_val);
-			}
-			else {
-				ret = std::make_tuple(backtracked, next_char_val, -1);
-			}
+            if (structure_elements[element].loopLeft)
+                ret = std::make_tuple(backtracked, next_char_val, -1);
+            else
+                ret = std::make_tuple(backtracked, -1, next_char_val);
 		}
-		else{
+		else
+        {
 			unsigned lchar = next_char_val / AlphabetSize;
 			unsigned rchar = next_char_val % AlphabetSize;
 
@@ -542,10 +540,9 @@ public:
 	}
 
 	std::tuple<int, int, int> get_next_char(){
-		std::tuple<int, int, int> ret;
-
-		int next_char_val, backtracked = 0;
-		bool single_type;
+		int backtracked = 0;
+		int next_char_val{};
+		bool single_type{};
 		bool duplicate = true;
 
 		if (this->patLen() >= this->max_length){
@@ -832,7 +829,7 @@ class MotifIterator{
 public:
 	unsigned count = 0;
 
-	MotifIterator(TStructure &structure, TBidirectionalIndex &index, unsigned min_match, double freq_threshold)
+	MotifIterator(TStructure const & structure, TBidirectionalIndex &index, unsigned min_match, double freq_threshold)
 		: structure_iter(structure.elements, min_match, true, freq_threshold), it(index), min_match(min_match){
 	}
 
@@ -1086,8 +1083,8 @@ TBoolVec getStemloopPositions2(TBidirectionalIndex &index, Motif *motif, int see
 
 			std::pair<int,int> pattern_pos = iter.patternPos();
 
-			for (int i=0; i < seqan::length(occs); ++i){
-				const TIndexPosType &pos = seqan::value(occs, i);
+			for (int idx=0; idx < seqan::length(occs); ++idx){
+				const TIndexPosType &pos = seqan::value(occs, idx);
 
 				// count a match at this position
 				//int stem_loop_pos = pattern_pos.first - structure.pos.first;
@@ -1155,17 +1152,22 @@ TBoolVec getStemloopPositions2(TBidirectionalIndex &index, Motif *motif, int see
 
 template <typename TBidirectionalIndex>
 //std::vector<TProfileInterval> getStemloopPositions(TBidirectionalIndex &index, Motif *motif, int threshold){
-std::vector<int> countStemloopHits(TBidirectionalIndex &index, Motif *motif, int seed_len, double freq_threshold, std::unordered_map<std::string, std::vector<RfamBenchRecord> > &refrecords){
-	unsigned stems = motif->profile.size();
+std::vector<int> countStemloopHits(TBidirectionalIndex &index,
+                                   Motif const & motif,
+                                   int seed_len,
+                                   double freq_threshold,
+                                   std::unordered_map<std::string, std::vector<RfamBenchRecord>> const & refrecords)
+{
+	unsigned stems = motif.profile.size();
 
-	std::vector<RfamBenchRecord> &refrec = refrecords[motif->header.at("ID")];
+	std::vector<RfamBenchRecord> const & refrec = refrecords.at(motif.header.at("ID"));
 
-	std::cout << motif->header.at("ID") << " is being searched..\n";
+	std::cout << motif.header.at("ID") << " is being searched..\n";
 	std::cout << "RNA inserts: \n";
 
 	int true_bases = 0;
 
-	for (RfamBenchRecord &rec : refrec){
+	for (RfamBenchRecord const & rec : refrec){
 		std::cout << rec.seq_name << "\t" << rec.ref_nr << " : " << rec.start << "\t" << rec.end << "\n";
 		true_bases += (rec.end - rec.start + 1);
 	}
@@ -1185,14 +1187,14 @@ std::vector<int> countStemloopHits(TBidirectionalIndex &index, Motif *motif, int
 		negatives.push_back(std::vector<bool>(textLen, true));
 	}
 
-	for (RfamBenchRecord &rec : refrec){
+	for (RfamBenchRecord const & rec : refrec){
 		for (int i=rec.start; i <= rec.end; ++i){
 			negatives[rec.ref_nr-1][i] = false;
 		}
 	}
 
 	for (unsigned i=0; i < stems; ++i){
-		TStructure &structure = motif->profile[i];
+		TStructure const & structure = motif.profile[i];
 
 		/*
 		int test_neg = 0;
@@ -1206,7 +1208,7 @@ std::vector<int> countStemloopHits(TBidirectionalIndex &index, Motif *motif, int
 		*/
 
 		// start of the hairpin in the whole sequence
-		//std::cout <<  structure.pos.first << " " << structure.pos.second << ": " << motif->profile.size() << "\n";
+		//std::cout <<  structure.pos.first << " " << structure.pos.second << ": " << motif.profile.size() << "\n";
 
 
 		int struclen = structure.pos.second - structure.pos.first + 1;
@@ -1230,7 +1232,7 @@ std::vector<int> countStemloopHits(TBidirectionalIndex &index, Motif *motif, int
 				const TIndexPosType &pos = seqan::value(occs, j);
 
 				int count = 0;
-				for (RfamBenchRecord &rec : refrec){
+				for (RfamBenchRecord const & rec : refrec){
 					//verify that match region didn't get flagged
 
 					//std::cout << count << " " << i << " " << pos.i1 << " " << pos.i2 << "\n";
@@ -1469,8 +1471,11 @@ void countHits2(Motif *motif, std::vector<std::vector<bool> > hits, int aln_len,
 }
 
 template <typename TStringType>
-std::vector<seqan::Tuple<int, 3> > findFamilyMatches(seqan::StringSet<TStringType> &seqs, std::vector<Motif*> &motifs,
-			std::unordered_map<std::string, std::vector<RfamBenchRecord> > &refrecords, AppOptions & options){
+std::vector<seqan::Tuple<int, 3>> findFamilyMatches(seqan::StringSet<TStringType> &seqs,
+                                                    std::vector<Motif> const & motifs,
+                                                    std::unordered_map<std::string, std::vector<RfamBenchRecord> > const & refrecords,
+                                                    AppOptions & options)
+{
 	std::vector<seqan::Tuple<int, 3> > results;
 
 	//TBidirectionalIndex index(seqs);
@@ -1479,19 +1484,19 @@ std::vector<seqan::Tuple<int, 3> > findFamilyMatches(seqan::StringSet<TStringTyp
 
 	for (int k=0; k < freqs.size(); ++k){
 		std::stringstream fpath;
-		fpath << motifs[0]->header.at("AC") << "_stats_" << freqs[k] << ".txt";
+		fpath << motifs[0].header.at("AC") << "_stats_" << freqs[k] << ".txt";
 
 		omp_lock_t writelock;
 		omp_init_lock(&writelock);
 
 		#pragma omp parallel for schedule(dynamic)
 		for (unsigned i=0; i < motifs.size(); ++i){
-			Motif *motif = motifs[i];
+			Motif const & motif = motifs[i];
 
-			if (motif == 0)
+			if (motif.seqence_information.empty())
 				continue;
 
-			std::cout << motif->header.at("ID") << "\n";
+			std::cout << motif.header.at("ID") << "\n";
 
 			//std::cout << motif->seedAlignment << "\n";
 			TBidirectionalIndex index(seqs);
@@ -1504,7 +1509,7 @@ std::vector<seqan::Tuple<int, 3> > findFamilyMatches(seqan::StringSet<TStringTyp
 			omp_set_lock(&writelock);
 			std::ofstream fout;
 			fout.open(fpath.str(), std::ios_base::app | std::ios_base::out);
-			fout << motif->header.at("ID");
+			fout << motif.header.at("ID");
 			fout << "\t" << result[0] << "\t" << result[1] << "\t" << result[2] << "\t" << result[3] << "\t" << result[4] << "\n";
 			fout.close();
 			omp_unset_lock(&writelock);

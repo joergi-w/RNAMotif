@@ -78,11 +78,11 @@ std::unordered_map<char, BracketType> bracket_to_type =
 	 {'<', ANGLE},  {'>', ANGLE}
 	};
 
-std::unordered_map<char, char> match_table =
-	{
-	 {')', '('}, {'>', '<'},
-	 {']', '['}, {'}', '{'}
-	};
+//std::unordered_map<char, char> match_table =
+//	{
+//	 {')', '('}, {'>', '<'},
+//	 {']', '['}, {'}', '{'}
+//	};
 
 /* Various functions related to brackets and bases */
 
@@ -236,7 +236,7 @@ struct AppOptions
     int verbosity;
     int fold_length;
     int match_len;
-    unsigned threads;
+    int threads;
     bool constrain;
     bool pseudoknot;
     double freq_threshold;
@@ -248,8 +248,8 @@ struct AppOptions
 
     AppOptions() :
         verbosity(1),
-		constrain(0),
-		pseudoknot(0)
+		constrain(false),
+		pseudoknot(false)
     {}
 };
 
