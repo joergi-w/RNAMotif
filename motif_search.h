@@ -398,11 +398,13 @@ public:
 
 		TPosHashPair hash_pair = std::make_pair(next_ptr->charNum, next_ptr->seqHash);
 
-		size_t prefix_key = std::hash<TPosHashPair>()(hash_pair);
-		if (prefix_states[element][pos][(prefix_key % HashTabLength)] != hash_pair){
-			prefix_states[element][pos][prefix_key % HashTabLength] = hash_pair;
-			duplicate = false;
-		}
+        size_t prefix_key = std::hash<TPosHashPair>()(hash_pair);
+        if (prefix_states[element][pos][(prefix_key % HashTabLength)] != hash_pair){
+            prefix_states[element][pos][prefix_key % HashTabLength] = hash_pair;
+            std::cout << "Hash Pair" << std::endl;
+            std::cout <<"ele "<< element << " " << "pos " << pos << std::endl;
+            duplicate = false;
+        }
 		else{
 			duplicate = true;
 			//std::cout << this->printPattern() << "\t   duplicate at " << element << " " << pos << " " << prefix_key << "\n";
