@@ -401,8 +401,8 @@ public:
         size_t prefix_key = std::hash<TPosHashPair>()(hash_pair);
         if (prefix_states[element][pos][(prefix_key % HashTabLength)] != hash_pair){
             prefix_states[element][pos][prefix_key % HashTabLength] = hash_pair;
-            std::cout << "Hash Pair" << std::endl;
-            std::cout <<"ele "<< element << " " << "pos " << pos << std::endl;
+//            std::cout << "Hash Pair" << std::endl;
+//            std::cout <<"ele "<< element << " " << "pos " << pos << std::endl;
             duplicate = false;
         }
 		else{
@@ -1231,7 +1231,9 @@ std::vector<int> countStemloopHits(TBidirectionalIndex &index,
 			//std::pair<int,int> pattern_pos = iter.patternPos();
 
 			for (unsigned j=0; j < seqan::length(occs); ++j){
-				const TIndexPosType &pos = seqan::value(occs, j);
+				const TIndexPosType &pos = seqan::value(occs, j); // := occs[j]
+				std::cout << "ITERATOR_MATCH\t" << i << "\t" << structure.pos.first << "\t" << structure.pos.second
+				          << "\t" << pos.i1 << "\t" << pos.i2 << "\n";
 
 				int count = 0;
 				for (RfamBenchRecord const & rec : refrec){
