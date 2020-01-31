@@ -1241,7 +1241,7 @@ std::vector<int> countStemloopHits(TBidirectionalIndex &index,
 
 					//std::cout << count << " " << i << " " << pos.i1 << " " << pos.i2 << "\n";
 					// matched in the right reference and in the right interval
-					bool inMatchRegion = (rec.ref_nr == (pos.i1-1)) && ( (rec.start <= pos.i2) && (pos.i2 <= rec.end) );
+					bool inMatchRegion = (rec.ref_nr == (pos.i1 + 1)) && ((rec.start <= pos.i2) && (pos.i2 <= rec.end));
 					// if for this record the stem was not already found -> mark as found if we hit the right area
 					if (inMatchRegion){
 						stemsFound[count][i] = true;
