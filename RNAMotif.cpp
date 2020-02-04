@@ -385,17 +385,17 @@ int main(int argc, char const ** argv)
 				  << "PSEUDOKNOTS\t" << options.pseudoknot << '\n'
 				  << "MAX LENGTH\t" << options.fold_length << '\n'
 				  << "FREQUENCY\t" << options.freq_threshold << '\n'
+				  << "THREADS  \t" << options.threads << '\n'
 				  << "RNA      \t" << options.rna_file << '\n'
 				  << "REFERENCE\t" << options.reference_file << '\n'
                   << "TARGET   \t" << options.genome_file << "\n\n";
 
         std::cout << "Data types\n"
-        		  << seqan::ValueSize<TBaseAlphabet>::VALUE << "\n"
-				  << seqan::ValueSize<TAlphabet>::VALUE << "\n"
-        		  << seqan::ValueSize<TBiAlphabet>::VALUE << "\n"
-				  << seqan::ValueSize<TAlphabetProfile>::VALUE << "\n"
-				  << seqan::ValueSize<TBiAlphabetProfile>::VALUE << "\n"
-				  << "Cache size " << HashTabLength << "\n";
+				  << "TAlphabet\t" << seqan::ValueSize<TAlphabet>::VALUE << "\n"
+        		  << "TBiAlphabet\t" << seqan::ValueSize<TBiAlphabet>::VALUE << "\n"
+				  << "TAlphabetProfile\t" << seqan::ValueSize<TAlphabetProfile>::VALUE << "\n"
+				  << "TBiAlphabetProfile\t" << seqan::ValueSize<TBiAlphabetProfile>::VALUE << "\n"
+				  << "Cache size\t " << HashTabLength << "\n";
     }
 
 
@@ -419,7 +419,7 @@ int main(int argc, char const ** argv)
 
 	std::vector<Motif> motifs(records.size());
 
-	#pragma omp parallel for schedule(dynamic)
+//	#pragma omp parallel for schedule(dynamic)
 	for (size_t k=0; k < records.size(); ++k)
 	{
 		seqan::StockholmRecord<TBaseAlphabet> const &record = records[k];
@@ -473,7 +473,7 @@ int main(int argc, char const ** argv)
 	std::unordered_map<std::string, std::vector<RfamBenchRecord> > reference_pos;
 	//outputStats(motifs);
 	if (options.reference_file != ""){
-		read_reference(options.reference_file, reference_pos);
+		read_reference(options.reference_file, reference_pos); // exclude reverse strand
 	}
 	else{
 		std::cout << "No reference pos file given.\n";
@@ -646,7 +646,7 @@ int main(int argc, char const ** argv)
 
 	//searchProfile(seqs, motifs[0]->profile[5], options.match_len);
 
-	findFamilyMatches(seqs, motifs, reference_pos, options);
+	findFamilyMatches(seqs, motifs, reference_pos, options.match_len);
 
 	//TStructure &prof1 = motifs[0]->profile[2];
 

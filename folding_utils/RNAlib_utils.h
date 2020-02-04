@@ -229,9 +229,9 @@ char* interactionsToStructure(TInteractions& interactions, int start, int end){
 }
 
 
-double getStructureProbability(TStructure& structure, FLT_OR_DBL* probs, int *iindex){
-	return getInteractionProbability(structure.interactions, probs, iindex, structure.pos.first, structure.pos.second);
-}
+//double getStructureProbability(TStructure& structure, FLT_OR_DBL* probs, int *iindex){
+//	return getInteractionProbability(structure.interactions, probs, iindex, structure.pos.first, structure.pos.second);
+//}
 
 bool checkMatch(TStructure& region, short *strucTab){
 	for (int i=region.pos.first; i <= region.pos.second; ++i){
@@ -315,7 +315,7 @@ TStemLoopProfile enforceHairpins(Motif &motif, std::unordered_map<int, std::tupl
 	TStemLoopProfile stemLoops = findStemLoops(consensusStructure);
 
 	for (auto stemLoop : stemLoops){
-		std::cout << "Setting 0 \n";
+//		std::cout << "Setting 0 \n";
 		stemLoop.suboptimal = 0;
 	}
 
@@ -354,7 +354,6 @@ TStemLoopProfile enforceHairpins(Motif &motif, std::unordered_map<int, std::tupl
 					maxj = j+off;
 				}
 			}
-			std::cout << "Fuck you mfe\n";
 
 			/*
 			{
@@ -580,7 +579,7 @@ void getConsensusStructure(Motif &motif, seqan::StockholmRecord<TBaseAlphabet> c
 
 	TStemLoopProfile result_regions = enforceHairpins(motif, hairpins, hairpinKeys, vc, seqs, structures);
 
-	std::cout << structures.size() << " SIZE\n";
+	std::cout << "Structures: " << structures.size() << "\n";
 	for (char * struc : structures){
 		std::cout << struc << "\n";
 	}
@@ -609,7 +608,7 @@ void getConsensusStructure(Motif &motif, seqan::StockholmRecord<TBaseAlphabet> c
 	//pl1 = vrna_plist_from_probs(vc, 0.005);
 	//pl2 = vrna_plist(structure, 0.95*0.95);
 
-	std::cout << "Regions (" << result_regions.size() << ")\n";
+	std::cout << "Regions: " << result_regions.size() << "\n";
 	for (auto& pair : result_regions){
 		partitionStemLoop(motif.seedAlignment, pair);
 
@@ -641,7 +640,7 @@ void getConsensusStructure(Motif &motif, seqan::StockholmRecord<TBaseAlphabet> c
 
 		pair.prob = std::exp((energy-sub_energy)/kT);
 
-		std::cout << pair.pos.first << " " << pair.pos.second <<  " " << pair.prob << "\n";
+		std::cout << "Pair (" << pair.pos.first << "," << pair.pos.second <<  ") prob " << pair.prob << "\n";
 
 		vrna_fold_compound_free(vc2);
 

@@ -35,6 +35,9 @@
 #ifndef APPS_RNAMOTIF_MOTIF_SEARCH_H_
 #define APPS_RNAMOTIF_MOTIF_SEARCH_H_
 
+#include <fstream>
+#include <tuple>
+
 #include "motif_structures.h"
 #include "motif.h"
 
@@ -1154,12 +1157,14 @@ TBoolVec getStemloopPositions2(TBidirectionalIndex &index, Motif *motif, int see
 
 template <typename TBidirectionalIndex>
 //std::vector<TProfileInterval> getStemloopPositions(TBidirectionalIndex &index, Motif *motif, int threshold){
-std::vector<int> countStemloopHits(TBidirectionalIndex &index,
+std::tuple<int, int, int, int, size_t> countStemloopHits(TBidirectionalIndex &index,
                                    Motif const & motif,
                                    int seed_len,
                                    double freq_threshold,
                                    std::unordered_map<std::string, std::vector<RfamBenchRecord>> const & refrecords)
 {
+//    std::ofstream logfile;
+//    logfile.open("log.txt");
 	unsigned stems = motif.profile.size();
 
 	std::vector<RfamBenchRecord> const & refrec = refrecords.at(motif.header.at("ID"));
@@ -1179,7 +1184,7 @@ std::vector<int> countStemloopHits(TBidirectionalIndex &index,
 	std::vector<std::vector<bool> > negatives;
 	std::vector<std::vector<bool> > stemsFound(refrec.size(), std::vector<bool>(stems));
 
-	auto indText = seqan::indexText(index);
+	auto const & indText = seqan::indexText(index);
 
 	//std::cout << "Size: " << seqan::length(indText) << "\n";
 
@@ -1232,8 +1237,8 @@ std::vector<int> countStemloopHits(TBidirectionalIndex &index,
 
 			for (unsigned j=0; j < seqan::length(occs); ++j){
 				const TIndexPosType &pos = seqan::value(occs, j); // := occs[j]
-				std::cout << "ITERATOR_MATCH\t" << i << "\t" << structure.pos.first << "\t" << structure.pos.second
-				          << "\t" << pos.i1 << "\t" << pos.i2 << "\n";
+//				logfile << "ITERATOR_MATCH\t" << i << "\t" << structure.pos.first << "\t" << structure.pos.second
+//				        << "\t" << pos.i1 << "\t" << pos.i2 << "\n";
 
 				int count = 0;
 				for (RfamBenchRecord const & rec : refrec){
@@ -1286,40 +1291,41 @@ std::vector<int> countStemloopHits(TBidirectionalIndex &index,
 		fn += (stemvec.size() - stems_set);
 	}
 
-	std::vector<int> result;
+//	std::vector<int> result;
 
 	std::cout << tn << "\t" << fp << "\n";
 	std::cout << tp << "\t" << fn << "\n";
 
-	result.push_back(tn);
-	result.push_back(fp);
-	result.push_back(tp);
-	result.push_back(fn);
-	result.push_back(refrec.size());
+//	result.push_back(tn);
+//	result.push_back(fp);
+//	result.push_back(tp);
+//	result.push_back(fn);
+//	result.push_back(refrec.size());
 
-	return result;
+//	logfile.close();
+	return std::make_tuple(tn, fp, tp, fn, refrec.size());
 }
 
-void countHits(TProfileInterval positions){
-	seqan::String<TProfileCargo> hits;
-	seqan::getAllIntervals(hits, positions);
-
-	for (unsigned i=0; i < seqan::length(hits); ++i) {
-		// only report hits where all stems occurred in the region
-		auto it = hits[i].cargo->begin();
-		int sum = 0;
-
-		while (it != hits[i].cargo->end()){
-			sum += *it;
-			++it;
-		}
-
-		//if (std::all_of(hits[i].cargo->begin(), hits[i].cargo->end(), [](bool v) { return v; }))
-		if (sum > (hits[i].cargo->size()/2)){
-			std::cout << hits[i].i1 << "    " << hits[i].i2 << "\n";
-		}
-	}
-}
+//void countHits(TProfileInterval positions){
+//	seqan::String<TProfileCargo> hits;
+//	seqan::getAllIntervals(hits, positions);
+//
+//	for (unsigned i=0; i < seqan::length(hits); ++i) {
+//		// only report hits where all stems occurred in the region
+//		auto it = hits[i].cargo->begin();
+//		int sum = 0;
+//
+//		while (it != hits[i].cargo->end()){
+//			sum += *it;
+//			++it;
+//		}
+//
+//		//if (std::all_of(hits[i].cargo->begin(), hits[i].cargo->end(), [](bool v) { return v; }))
+//		if (sum > (hits[i].cargo->size()/2)){
+//			std::cout << hits[i].i1 << "    " << hits[i].i2 << "\n";
+//		}
+//	}
+//}
 
 template<typename T>
 std::ostream & operator<<(std::ostream & os, std::vector<T> vec)
@@ -1332,171 +1338,172 @@ std::ostream & operator<<(std::ostream & os, std::vector<T> vec)
 
 // scan the hit count vector with a sliding window
 
-void countHits(Motif *motif, std::vector<std::vector<bool> > hits, int aln_len){
-	int hitsize = hits[0].size();
-	int n = hits.size();
-	std::vector<int> state(hitsize);
+//void countHits(Motif *motif, std::vector<std::vector<bool> > hits, int aln_len){
+//	int hitsize = hits[0].size();
+//	int n = hits.size();
+//	std::vector<int> state(hitsize);
+//
+//	std::cout << hits.size() << " " << (aln_len+1) << " " << ((int)hits.size() - aln_len +1) << "--- \n";
+//
+//	int hitThreshold = hitsize*0.8;
+//
+//	std::cout << hitThreshold << " threshold\n";
+//
+//	int window_start = -1;
+//
+//	std::cout << "Counting hits?\n";
+//
+//	// scan over the hits with a window of length aln_len
+//	for (int i=0; i < n; ++i){
+//		std::cout << hits[i] << "\n";
+//		std::cout << state << " " << i << "\n";
+//
+//		// remove the contribution of the position that dropped from the window
+//		if (i >= aln_len){
+//			int hitsum = std::accumulate(state.begin(), state.end(), 0, [](int a, int b){return a + (b > 0);});
+//
+//			// first check whether the current window had sufficient matches
+//			//if (hitsum > hitsize/2){
+//			if (hitsum > hitThreshold){
+//				//std::cout << state << " - " << i << "\n";
+//				if (window_start == -1){
+//					std::cout << "Window started at " << i - aln_len << "\n";
+//					window_start = i-aln_len;
+//				}
+//
+//			}
+//			else if (window_start != -1){
+//				std::cout << "Windows ended at " << (i-1) << "\n";
+//				std::cout << window_start << " " << (i-1) << "\n";
+//				window_start = -1;
+//			}
+//
+//			for (int j=0; j < hitsize; ++j){
+//				state[j] -= hits[i-aln_len][j];
+//			}
+//		}
+//
+//		// update matches in the window in a sliding fashion
+//		for (int j=0; j < hitsize; ++j){
+//			state[j] += hits[i][j];
+//		}
+//	}
+//
+//	int hitsum = std::accumulate(state.begin(), state.end(), 0, [](int a, int b){return a + (b > 0);});
+//	//std::cout << hitsum << "\n";
+//	// first check whether the current window had sufficient matches
+//	if (hitsum > hitThreshold){
+//		std::cout << std::max(0, n-aln_len) << " " << n-1 << "\n";
+//	}
+//}
 
-	std::cout << hits.size() << " " << (aln_len+1) << " " << ((int)hits.size() - aln_len +1) << "--- \n";
-
-	int hitThreshold = hitsize*0.8;
-
-	std::cout << hitThreshold << " threshold\n";
-
-	int window_start = -1;
-
-	std::cout << "Counting hits?\n";
-
-	// scan over the hits with a window of length aln_len
-	for (int i=0; i < n; ++i){
-		std::cout << hits[i] << "\n";
-		std::cout << state << " " << i << "\n";
-
-		// remove the contribution of the position that dropped from the window
-		if (i >= aln_len){
-			int hitsum = std::accumulate(state.begin(), state.end(), 0, [](int a, int b){return a + (b > 0);});
-
-			// first check whether the current window had sufficient matches
-			//if (hitsum > hitsize/2){
-			if (hitsum > hitThreshold){
-				//std::cout << state << " - " << i << "\n";
-				if (window_start == -1){
-					std::cout << "Window started at " << i - aln_len << "\n";
-					window_start = i-aln_len;
-				}
-
-			}
-			else if (window_start != -1){
-				std::cout << "Windows ended at " << (i-1) << "\n";
-				std::cout << window_start << " " << (i-1) << "\n";
-				window_start = -1;
-			}
-
-			for (int j=0; j < hitsize; ++j){
-				state[j] -= hits[i-aln_len][j];
-			}
-		}
-
-		// update matches in the window in a sliding fashion
-		for (int j=0; j < hitsize; ++j){
-			state[j] += hits[i][j];
-		}
-	}
-
-	int hitsum = std::accumulate(state.begin(), state.end(), 0, [](int a, int b){return a + (b > 0);});
-	//std::cout << hitsum << "\n";
-	// first check whether the current window had sufficient matches
-	if (hitsum > hitThreshold){
-		std::cout << std::max(0, n-aln_len) << " " << n-1 << "\n";
-	}
-}
-
-void countHits2(Motif *motif, std::vector<std::vector<bool> > hits, int aln_len, AppOptions & options){
-	int hitsize = hits[0].size();
-	int n = hits.size();
-	std::vector<int> state(hitsize);
-
-	std::cout << hits.size() << " " << (aln_len+1) << " " << ((int)hits.size() - aln_len +1) << "--- \n";
-
-	int hitThreshold = hitsize*0.8;
-	std::cout << hitThreshold << " threshold\n";
-
-	typedef std::array<int,3> THitWindow;
-	std::list<THitWindow> hit_windows;
-
-	std::cout << "Counting hits?\n";
-
-
-	// scan over the hits with a window of length aln_len
-	// as soon as the stem loops were found in order, report the window
-	for (int i=0; i < n; ++i){
-		std::cout << hits[i] << " - " << (i + eps) << "\n";
-		// clear windows that could not be extended for a certain distance
-		std::list<THitWindow>::iterator win_iter = hit_windows.begin();
-		while (win_iter != hit_windows.end()){
-			// waiting for component c
-			int c = (*win_iter)[2];
-			int stem_distance = motif->profile[c].pos.first - motif->profile[c-1].pos.second;
-			if (stem_distance < i - ((*win_iter)[1] + options.match_len + eps) ){
-				std::cout << "Window (" << (*win_iter)[0] << "," << ((*win_iter)[1] + options.match_len + eps) << ") has expired.\n";
-				hit_windows.erase(win_iter++);
-			}
-			else{
-				win_iter++;
-			}
-		}
-
-		// the first element being set opens a new hit_window
-		if (hits[i][0]){
-			std::cout<< "Opening window at " << i << "\n";
-			THitWindow new_win = {i, i, 1};
-			hit_windows.push_back(new_win);
-		}
-
-		// for the other elements, check if there is a open window
-		for (int j=1; j < hitsize; ++j){
-			// if stem j was found here
-			if (hits[i][j]){
-				// go through all open windows
-				win_iter = hit_windows.begin();
-				while (win_iter != hit_windows.end()){
-					// if an open window can be extended by this match
-					if ( ((*win_iter)[2] == j) && (((*win_iter)[1] + options.match_len + eps) < i) ){
-						std::cout << "Extending (" << (*win_iter)[0] << "," << ((*win_iter)[1] + options.match_len + eps) << ") to ("
-								  << (*win_iter)[0] << "," << (i + options.match_len + eps) << ")\n";
-						(*win_iter)[1] = i;
-						++(*win_iter)[2];
-					}
-
-					bool remove = false;
-
-					// found all stem loops, report and mark completed window for deletion
-					if ((*win_iter)[2] == hitsize){
-						std::cout << "Match: " << (*win_iter)[0] << " " << ((*win_iter)[1] + options.match_len + eps) << "\n";
-						remove = true;
-					}
-
-					// advance iterator and delete completed window if necessary
-					std::list<THitWindow>::iterator prev = win_iter++;
-					if (remove){
-						hit_windows.erase(prev);
-					}
-				}
-			}
-		}
-	}
-
-	//int hitsum = std::accumulate(state.begin(), state.end(), 0, [](int a, int b){return a + (b > 0);});
-	//std::cout << hitsum << "\n";
-	// first check whether the current window had sufficient matches
-	//if (hitsum > hitThreshold){
-	//	std::cout << std::max(0, n-aln_len) << " " << n-1 << "\n";
-	//}
-}
+//void countHits2(Motif *motif, std::vector<std::vector<bool> > hits, int aln_len, AppOptions & options){
+//	int hitsize = hits[0].size();
+//	int n = hits.size();
+//	std::vector<int> state(hitsize);
+//
+//	std::cout << hits.size() << " " << (aln_len+1) << " " << ((int)hits.size() - aln_len +1) << "--- \n";
+//
+//	int hitThreshold = hitsize*0.8;
+//	std::cout << hitThreshold << " threshold\n";
+//
+//	typedef std::array<int,3> THitWindow;
+//	std::list<THitWindow> hit_windows;
+//
+//	std::cout << "Counting hits?\n";
+//
+//
+//	// scan over the hits with a window of length aln_len
+//	// as soon as the stem loops were found in order, report the window
+//	for (int i=0; i < n; ++i){
+//		std::cout << hits[i] << " - " << (i + eps) << "\n";
+//		// clear windows that could not be extended for a certain distance
+//		std::list<THitWindow>::iterator win_iter = hit_windows.begin();
+//		while (win_iter != hit_windows.end()){
+//			// waiting for component c
+//			int c = (*win_iter)[2];
+//			int stem_distance = motif->profile[c].pos.first - motif->profile[c-1].pos.second;
+//			if (stem_distance < i - ((*win_iter)[1] + options.match_len + eps) ){
+//				std::cout << "Window (" << (*win_iter)[0] << "," << ((*win_iter)[1] + options.match_len + eps) << ") has expired.\n";
+//				hit_windows.erase(win_iter++);
+//			}
+//			else{
+//				win_iter++;
+//			}
+//		}
+//
+//		// the first element being set opens a new hit_window
+//		if (hits[i][0]){
+//			std::cout<< "Opening window at " << i << "\n";
+//			THitWindow new_win = {i, i, 1};
+//			hit_windows.push_back(new_win);
+//		}
+//
+//		// for the other elements, check if there is a open window
+//		for (int j=1; j < hitsize; ++j){
+//			// if stem j was found here
+//			if (hits[i][j]){
+//				// go through all open windows
+//				win_iter = hit_windows.begin();
+//				while (win_iter != hit_windows.end()){
+//					// if an open window can be extended by this match
+//					if ( ((*win_iter)[2] == j) && (((*win_iter)[1] + options.match_len + eps) < i) ){
+//						std::cout << "Extending (" << (*win_iter)[0] << "," << ((*win_iter)[1] + options.match_len + eps) << ") to ("
+//								  << (*win_iter)[0] << "," << (i + options.match_len + eps) << ")\n";
+//						(*win_iter)[1] = i;
+//						++(*win_iter)[2];
+//					}
+//
+//					bool remove = false;
+//
+//					// found all stem loops, report and mark completed window for deletion
+//					if ((*win_iter)[2] == hitsize){
+//						std::cout << "Match: " << (*win_iter)[0] << " " << ((*win_iter)[1] + options.match_len + eps) << "\n";
+//						remove = true;
+//					}
+//
+//					// advance iterator and delete completed window if necessary
+//					std::list<THitWindow>::iterator prev = win_iter++;
+//					if (remove){
+//						hit_windows.erase(prev);
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	//int hitsum = std::accumulate(state.begin(), state.end(), 0, [](int a, int b){return a + (b > 0);});
+//	//std::cout << hitsum << "\n";
+//	// first check whether the current window had sufficient matches
+//	//if (hitsum > hitThreshold){
+//	//	std::cout << std::max(0, n-aln_len) << " " << n-1 << "\n";
+//	//}
+//}
 
 template <typename TStringType>
-std::vector<seqan::Tuple<int, 3>> findFamilyMatches(seqan::StringSet<TStringType> &seqs,
-                                                    std::vector<Motif> const & motifs,
-                                                    std::unordered_map<std::string, std::vector<RfamBenchRecord> > const & refrecords,
-                                                    AppOptions & options)
+void findFamilyMatches(seqan::StringSet<TStringType> &seqs,
+                       std::vector<Motif> const & motifs,
+                       std::unordered_map<std::string, std::vector<RfamBenchRecord> > const & refrecords,
+                       int match_len)
 {
-	std::vector<seqan::Tuple<int, 3> > results;
-
 	//TBidirectionalIndex index(seqs);
 
-	std::vector<double> freqs = {0,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2};
+//	std::vector<double> freqs = {0,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2};
+	std::vector<double> freqs = {0.0, 0.1, 0.2};
 
-	for (int k=0; k < freqs.size(); ++k){
-		std::stringstream fpath;
-		fpath << motifs[0].header.at("AC") << "_stats_" << freqs[k] << ".txt";
+	for (double freq : freqs){
+//		std::stringstream fpath;
+//		fpath << motifs[0].header.at("AC") << "_stats_" << freq << ".txt";
 
-		omp_lock_t writelock;
-		omp_init_lock(&writelock);
+		std::string const stat_filename = "stat_" + std::to_string(static_cast<int>(freq * 10 + 0.01)) + ".txt";
+        std::ofstream fout;
+        fout.open(stat_filename, std::ios_base::out);
 
-		#pragma omp parallel for schedule(dynamic)
-		for (unsigned i=0; i < motifs.size(); ++i){
-			Motif const & motif = motifs[i];
+//		omp_lock_t writelock;
+//		omp_init_lock(&writelock);
 
+//		#pragma omp parallel for schedule(dynamic)
+		for (Motif const & motif : motifs){
 			if (motif.seqence_information.empty())
 				continue;
 
@@ -1508,21 +1515,21 @@ std::vector<seqan::Tuple<int, 3>> findFamilyMatches(seqan::StringSet<TStringType
 			// find the locations of the motif matches
 			//std::cout << motif.header.at("AC") << "\n";
 			//std::vector<TProfileInterval> result = getStemloopPositions(index, motif, threshold);
-			std::vector<int> result = countStemloopHits(index, motif, options.match_len, freqs[k], refrecords);
+			auto result = countStemloopHits(index, motif, match_len, freq, refrecords);
 
-			omp_set_lock(&writelock);
-			std::ofstream fout;
-			fout.open(fpath.str(), std::ios_base::app | std::ios_base::out);
+//			omp_set_lock(&writelock);
 			fout << motif.header.at("ID");
-			fout << "\t" << result[0] << "\t" << result[1] << "\t" << result[2] << "\t" << result[3] << "\t" << result[4] << "\n";
-			fout.close();
-			omp_unset_lock(&writelock);
+			fout << "\t" << std::get<0>(result)
+			     << "\t" << std::get<1>(result)
+                 << "\t" << std::get<2>(result)
+                 << "\t" << std::get<3>(result)
+                 << "\t" << std::get<4>(result) << "\n";
+//			omp_unset_lock(&writelock);
 		}
+        fout.close();
 
-		omp_destroy_lock(&writelock);
+//		omp_destroy_lock(&writelock);
 	}
-
-	return results;
 }
 
 #endif  // #ifndef APPS_RNAMOTIF_MOTIF_SEARCH_H_
