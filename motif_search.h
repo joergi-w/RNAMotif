@@ -310,13 +310,14 @@ namespace std
   };
 }
 
-class StructureIterator{
+class StructureIterator
+{
 public:
 	typedef ProfileCharIterImpl<TAlphabetProfile> TSinglePointer;
 	typedef ProfileCharIterImpl<TBiAlphabetProfile> TPairPointer;
 	typedef std::shared_ptr<ProfileCharIter> ProfilePointer;
 
-	int total_length = 0;
+//	int total_length = 0;
 	typedef std::pair<uint8_t, THashType> TPosHashPair;
 	typedef std::vector<TPosHashPair> TPairArray;
 	std::vector<std::vector<TPairArray> > prefix_states;
@@ -329,7 +330,7 @@ public:
 	int elem_length;
 	int pos;
 	std::pair<int,int> intital_pos;
-	int end_count = 0;
+//	int end_count = 0;
 	double threshold_freq;
 	ProfilePointer prof_ptr;
 	bool hashLast;
@@ -816,8 +817,8 @@ public:
 template <typename TBidirectionalIndex>
 class MotifIterator{
 	typedef typename seqan::Iterator<TBidirectionalIndex, seqan::TopDown<seqan::ParentLinks<> > >::Type TIterator;
-	typedef typename seqan::SAValue<TBidirectionalIndex>::Type THitPair;
-	typedef seqan::String< THitPair > TOccurenceString;
+//	typedef typename seqan::SAValue<TBidirectionalIndex>::Type THitPair;
+//	typedef seqan::String< THitPair > TOccurenceString;
 
 	StructureIterator structure_iter;
 	TIterator it;
@@ -835,8 +836,7 @@ public:
 	unsigned count = 0;
 
 	MotifIterator(TStructure const & structure, TBidirectionalIndex &index, unsigned min_match, double freq_threshold)
-		: structure_iter(structure.elements, min_match, true, freq_threshold), it(index), min_match(min_match){
-	}
+		: structure_iter(structure.elements, min_match, true, freq_threshold), it(index), min_match(min_match) {}
 
 	std::pair<int,int> patternPos(){
 		return this->structure_iter.patPos();
@@ -992,168 +992,170 @@ public:
 
 //template <typename TBidirectionalIndex>
 //void searchProfile(TBidirectionalIndex &index, TStructure &profile){
-void searchProfile(seqan::StringSet<seqan::String<TBaseAlphabet> > seqs, TStructure profile, int seed_len){
-	typedef seqan::String< TIndexPosType > TOccurenceString;
-
-	TBidirectionalIndex index(seqs);
-	MotifIterator<TBidirectionalIndex> iter(profile, index, seed_len, 0);
-
-	std::cout << "Searching for " << profile.pos.first << " " << profile.pos.second << "\n";
-
-	if ((profile.pos.second - profile.pos.first + 1) < seed_len){
-		std::cout << "Skipping, length " << (profile.pos.second - profile.pos.first + 1) << " shorter than " << seed_len << "\n";
-		return;
-	}
-
-	while (iter.next()){
-		auto occs = iter.getOccurrences();
-		//std::cout << iter.countOccurrences() << "\n";
-		//#pragma omp parallel for
-		for (int i=0; i < seqan::length(occs); ++i){
-			const TIndexPosType &pos = seqan::value(occs, i);
-		}
-	}
-
-	std::cout << iter.count << " counted \n";
-}
-
-typedef std::vector<std::vector<std::vector<bool> > > TBoolVec;
-
-template <typename TBidirectionalIndex>
-//std::vector<TProfileInterval> getStemloopPositions(TBidirectionalIndex &index, Motif *motif, int threshold){
-TBoolVec getStemloopPositions2(TBidirectionalIndex &index, Motif *motif, int seed_len, double freq_threshold){
-	typedef typename seqan::SAValue<TBidirectionalIndex>::Type THitPair;
-	typedef seqan::String< TIndexPosType > TOccurenceString;
-
-	int n_refs   = seqan::length(seqan::indexText(index));
-	int n_strucs = motif->profile.size();
-
-	//std::vector<TOccurenceString> result(profile.size());
-
-	// create one interval tree for each contig in the reference genome
-	std::vector<TProfileInterval> intervals(seqan::countSequences(index));
-	TBoolVec pos_hits;
-	//std::vector<TProfileInterval> intervals;
-
-	std::cout << "INIT " << " " << n_refs << "\n";
-	auto indText = seqan::indexText(index);
 
 
-	for (int i=0; i < seqan::length(indText); ++i){
-		int textLen = seqan::length(seqan::value(indText, i));
-		pos_hits.push_back(std::vector<std::vector<bool> >(textLen, std::vector<bool>(n_strucs)));
-	}
+//void searchProfile(seqan::StringSet<seqan::String<TBaseAlphabet> > seqs, TStructure profile, int seed_len){
+//	typedef seqan::String< TIndexPosType > TOccurenceString;
+//
+//	TBidirectionalIndex index(seqs);
+//	MotifIterator<TBidirectionalIndex> iter(profile, index, seed_len, 0);
+//
+//	std::cout << "Searching for " << profile.pos.first << " " << profile.pos.second << "\n";
+//
+//	if ((profile.pos.second - profile.pos.first + 1) < seed_len){
+//		std::cout << "Skipping, length " << (profile.pos.second - profile.pos.first + 1) << " shorter than " << seed_len << "\n";
+//		return;
+//	}
+//
+//	while (iter.next()){
+//		auto occs = iter.getOccurrences();
+//		//std::cout << iter.countOccurrences() << "\n";
+//		//#pragma omp parallel for
+//		for (int i=0; i < seqan::length(occs); ++i){
+//			const TIndexPosType &pos = seqan::value(occs, i);
+//		}
+//	}
+//
+//	std::cout << iter.count << " counted \n";
+//}
 
-	int id = 0;
-	//int n = seqan::length(motif->seedAlignment);
-	int n = seqan::length(seqan::row(motif->seedAlignment,0));
-	std::cout << "ALN LEN: " << n << "\n";
-	int stems = motif->profile.size();
-
-	for (unsigned i=0; i < motif->profile.size(); ++i){
-		TStructure &structure = motif->profile[i];
-
-		// start of the hairpin in the whole sequence
-		std::cout <<  structure.pos.first << " " << structure.pos.second << ": " << motif->profile.size() << "\n";
-
-		std::cout << motif->header.at("AC") << " is being searched..\n";
-
-		int struclen = structure.pos.second - structure.pos.first + 1;
-
-		/*
-		if (struclen < threshold){
-			std::cout << "Skipping, length " << (structure.pos.second - structure.pos.first + 1) << " shorter than " << threshold << "\n";
-			++id;
-			continue;
-		}*/
-
-		//std::cout << "ITER\n";
-
-		MotifIterator<TBidirectionalIndex> iter(structure, index, std::min(struclen, seed_len), freq_threshold);
-		//MotifIterator<TBidirectionalIndex> iter(structure, index, threshold);
-
-		unsigned occ_sum   = 0;
-		unsigned pat_count = 0;
-
-		while (iter.next()){
-			//if (pat_count % 1000 == 0){
-			//	std::cout << occ_sum << " " << pat_count << "\n";
-			//}
-
-			++pat_count;
-
-			unsigned occ_count = iter.countOccurrences();
-			auto occs = iter.getOccurrences();
-			occ_sum += occ_count;
-
-			std::pair<int,int> pattern_pos = iter.patternPos();
-
-			for (int idx=0; idx < seqan::length(occs); ++idx){
-				const TIndexPosType &pos = seqan::value(occs, idx);
-
-				// count a match at this position
-				//int stem_loop_pos = pattern_pos.first - structure.pos.first;
-				//int index = (pos.i2 >= eps) ? (pos.i2 - eps) : 0;
-				pos_hits[pos.i1][index][id] = true;
-				//int index = (pos.i2 >= pattern_pos) ? (pos.i2 - pattern_pos) : 0;
-
-				/*
-				TProfileInterval &interval = intervals[pos.i1];
-				seqan::String<TProfileCargo> hits;
-
-				// check if the stem occurs in an already existing match region
-				findIntervals(hits, interval, pos.i2);
-				inters += seqan::length(hits);
-
-				// if this stem isn't located in an existing match region
-				// create a new match region and store the stem loop there
-				if (seqan::length(hits) == 0){
-					//std::cout << loc << " " << n << " " << pos.i2 << " " << pos.i2-loc << " " << pos.i2 + (n-loc) << "\n";
-
-					std::shared_ptr<std::vector<bool> > stemSet(new std::vector<bool>(stems));
-					(*stemSet)[id] = true;
-					// add an interval around the matched stem
-					//std::cout << "Adding interval from " << (pos.i2 - (  pattern_pos) - eps) << " to " << (pos.i2 + (n-pattern_pos) + eps) << "\n";
-					//std::cout << "(Match: " << pos.i2 << " " << pattern_pos << ")" << "\t" << (pos.i2 - pattern_pos) << " " << (pos.i2 + (n-pattern_pos)) << "\n";
-					const long unsigned int left  = (pos.i2 < (pattern_pos + eps)) ? 0 : (pos.i2 - (  pattern_pos) - eps);
-					const long unsigned int right = pos.i2 + (n-pattern_pos) + eps;
-
-					//std::cout << left << " (" << pos.i2 << " " << pos.i2 + n-pattern_pos << " )" << " " << right << "\n";
-
-					//seqan::addInterval(interval, pos.i2 - (  pattern_pos) - eps, pos.i2 + (n-pattern_pos) + eps, stemSet);
-					seqan::addInterval(interval, left, right, stemSet);
-				}
-				// else add to the list of hits
-				else{
-					if (seqan::length(hits) > 1) ++more1;
-
-					for (unsigned i=0; i < seqan::length(hits); ++i){
-						(*hits[i].cargo)[id] = true;
-					}
-				}
-				*/
-			}
-		}
-
-		//std::cout << "Count " << pat_count << " - " << occ_sum << " / " << (double)occ_sum / (double)pat_count << "\n";
-		/*
-
-		std::cout << "Intervals: " << inters << " " << more1 << "\n";
-		std::cout << "Hits: " << occ_sum << " in " << pat_count << " patterns.\n";
-
-		for (unsigned i=0; i < seqan::countSequences(index); ++i)
-			std::cout << "After " << id << "," << i << ": " << intervals[i].interval_counter << "\n";
-		*/
-
-		std::cout << occ_sum << " found for " << id << "\n";
-
-		//for (unsigned i=0; i < seqan::countSequences(index); ++i)
-		//	std::cout << "After " << id << "," << i << ": " << std::accumulate(pos_hits[i].begin(), pos_hits[i].end(), 0) << "\n";
-		++id;
-	}
-
-	return pos_hits;
-}
+//typedef std::vector<std::vector<std::vector<bool> > > TBoolVec;
+//
+//template <typename TBidirectionalIndex>
+////std::vector<TProfileInterval> getStemloopPositions(TBidirectionalIndex &index, Motif *motif, int threshold){
+//TBoolVec getStemloopPositions2(TBidirectionalIndex &index, Motif *motif, int seed_len, double freq_threshold){
+//	typedef typename seqan::SAValue<TBidirectionalIndex>::Type THitPair;
+//	typedef seqan::String< TIndexPosType > TOccurenceString;
+//
+//	int n_refs   = seqan::length(seqan::indexText(index));
+//	int n_strucs = motif->profile.size();
+//
+//	//std::vector<TOccurenceString> result(profile.size());
+//
+//	// create one interval tree for each contig in the reference genome
+//	std::vector<TProfileInterval> intervals(seqan::countSequences(index));
+//	TBoolVec pos_hits;
+//	//std::vector<TProfileInterval> intervals;
+//
+//	std::cout << "INIT " << " " << n_refs << "\n";
+//	auto indText = seqan::indexText(index);
+//
+//
+//	for (int i=0; i < seqan::length(indText); ++i){
+//		int textLen = seqan::length(seqan::value(indText, i));
+//		pos_hits.push_back(std::vector<std::vector<bool> >(textLen, std::vector<bool>(n_strucs)));
+//	}
+//
+//	int id = 0;
+//	//int n = seqan::length(motif->seedAlignment);
+//	int n = seqan::length(seqan::row(motif->seedAlignment,0));
+//	std::cout << "ALN LEN: " << n << "\n";
+//	int stems = motif->profile.size();
+//
+//	for (unsigned i=0; i < motif->profile.size(); ++i){
+//		TStructure &structure = motif->profile[i];
+//
+//		// start of the hairpin in the whole sequence
+//		std::cout <<  structure.pos.first << " " << structure.pos.second << ": " << motif->profile.size() << "\n";
+//
+//		std::cout << motif->header.at("AC") << " is being searched..\n";
+//
+//		int struclen = structure.pos.second - structure.pos.first + 1;
+//
+//		/*
+//		if (struclen < threshold){
+//			std::cout << "Skipping, length " << (structure.pos.second - structure.pos.first + 1) << " shorter than " << threshold << "\n";
+//			++id;
+//			continue;
+//		}*/
+//
+//		//std::cout << "ITER\n";
+//
+//		MotifIterator<TBidirectionalIndex> iter(structure, index, std::min(struclen, seed_len), freq_threshold);
+//		//MotifIterator<TBidirectionalIndex> iter(structure, index, threshold);
+//
+//		unsigned occ_sum   = 0;
+//		unsigned pat_count = 0;
+//
+//		while (iter.next()){
+//			//if (pat_count % 1000 == 0){
+//			//	std::cout << occ_sum << " " << pat_count << "\n";
+//			//}
+//
+//			++pat_count;
+//
+//			unsigned occ_count = iter.countOccurrences();
+//			auto occs = iter.getOccurrences();
+//			occ_sum += occ_count;
+//
+//			std::pair<int,int> pattern_pos = iter.patternPos();
+//
+//			for (int idx=0; idx < seqan::length(occs); ++idx){
+//				const TIndexPosType &pos = seqan::value(occs, idx);
+//
+//				// count a match at this position
+//				//int stem_loop_pos = pattern_pos.first - structure.pos.first;
+//				//int index = (pos.i2 >= eps) ? (pos.i2 - eps) : 0;
+//				pos_hits[pos.i1][index][id] = true;
+//				//int index = (pos.i2 >= pattern_pos) ? (pos.i2 - pattern_pos) : 0;
+//
+//				/*
+//				TProfileInterval &interval = intervals[pos.i1];
+//				seqan::String<TProfileCargo> hits;
+//
+//				// check if the stem occurs in an already existing match region
+//				findIntervals(hits, interval, pos.i2);
+//				inters += seqan::length(hits);
+//
+//				// if this stem isn't located in an existing match region
+//				// create a new match region and store the stem loop there
+//				if (seqan::length(hits) == 0){
+//					//std::cout << loc << " " << n << " " << pos.i2 << " " << pos.i2-loc << " " << pos.i2 + (n-loc) << "\n";
+//
+//					std::shared_ptr<std::vector<bool> > stemSet(new std::vector<bool>(stems));
+//					(*stemSet)[id] = true;
+//					// add an interval around the matched stem
+//					//std::cout << "Adding interval from " << (pos.i2 - (  pattern_pos) - eps) << " to " << (pos.i2 + (n-pattern_pos) + eps) << "\n";
+//					//std::cout << "(Match: " << pos.i2 << " " << pattern_pos << ")" << "\t" << (pos.i2 - pattern_pos) << " " << (pos.i2 + (n-pattern_pos)) << "\n";
+//					const long unsigned int left  = (pos.i2 < (pattern_pos + eps)) ? 0 : (pos.i2 - (  pattern_pos) - eps);
+//					const long unsigned int right = pos.i2 + (n-pattern_pos) + eps;
+//
+//					//std::cout << left << " (" << pos.i2 << " " << pos.i2 + n-pattern_pos << " )" << " " << right << "\n";
+//
+//					//seqan::addInterval(interval, pos.i2 - (  pattern_pos) - eps, pos.i2 + (n-pattern_pos) + eps, stemSet);
+//					seqan::addInterval(interval, left, right, stemSet);
+//				}
+//				// else add to the list of hits
+//				else{
+//					if (seqan::length(hits) > 1) ++more1;
+//
+//					for (unsigned i=0; i < seqan::length(hits); ++i){
+//						(*hits[i].cargo)[id] = true;
+//					}
+//				}
+//				*/
+//			}
+//		}
+//
+//		//std::cout << "Count " << pat_count << " - " << occ_sum << " / " << (double)occ_sum / (double)pat_count << "\n";
+//		/*
+//
+//		std::cout << "Intervals: " << inters << " " << more1 << "\n";
+//		std::cout << "Hits: " << occ_sum << " in " << pat_count << " patterns.\n";
+//
+//		for (unsigned i=0; i < seqan::countSequences(index); ++i)
+//			std::cout << "After " << id << "," << i << ": " << intervals[i].interval_counter << "\n";
+//		*/
+//
+//		std::cout << occ_sum << " found for " << id << "\n";
+//
+//		//for (unsigned i=0; i < seqan::countSequences(index); ++i)
+//		//	std::cout << "After " << id << "," << i << ": " << std::accumulate(pos_hits[i].begin(), pos_hits[i].end(), 0) << "\n";
+//		++id;
+//	}
+//
+//	return pos_hits;
+//}
 
 template <typename TBidirectionalIndex>
 //std::vector<TProfileInterval> getStemloopPositions(TBidirectionalIndex &index, Motif *motif, int threshold){
@@ -1161,48 +1163,39 @@ std::tuple<int, int, int, int, size_t> countStemloopHits(TBidirectionalIndex &in
                                    Motif const & motif,
                                    int seed_len,
                                    double freq_threshold,
-                                   std::unordered_map<std::string, std::vector<RfamBenchRecord>> const & refrecords)
+                                   std::vector<RfamBenchRecord> const & refrec)
 {
 //    std::ofstream logfile;
 //    logfile.open("log.txt");
-	unsigned stems = motif.profile.size();
-
-	std::vector<RfamBenchRecord> const & refrec = refrecords.at(motif.header.at("ID"));
-
-	std::cout << motif.header.at("ID") << " is being searched..\n";
 	std::cout << "RNA inserts: \n";
-
-	int true_bases = 0;
-
-	for (RfamBenchRecord const & rec : refrec){
-		std::cout << rec.seq_name << "\t" << rec.ref_nr << " : " << rec.start << "\t" << rec.end << "\n";
-		true_bases += (rec.end - rec.start + 1);
-	}
 
 	// set up stats counters
 	// the true negative is at the start each position
-	std::vector<std::vector<bool> > negatives;
-	std::vector<std::vector<bool> > stemsFound(refrec.size(), std::vector<bool>(stems));
-
 	auto const & indText = seqan::indexText(index);
+	std::vector<std::vector<bool> > negatives;
+	negatives.reserve(seqan::length(indText));
 
-	//std::cout << "Size: " << seqan::length(indText) << "\n";
-
-	for (unsigned i=0; i < seqan::length(indText); ++i){
+	for (size_t i = 0; i < seqan::length(indText); ++i)
+	{
 		int textLen = seqan::length(seqan::value(indText, i));
-		//std::cout << textLen << "?\n";
 		negatives.push_back(std::vector<bool>(textLen, true));
 	}
 
-	for (RfamBenchRecord const & rec : refrec){
-		for (int i=rec.start; i <= rec.end; ++i){
+    int true_bases = 0;
+    for (RfamBenchRecord const & rec : refrec)
+    {
+        std::cout << rec.seq_name << "\tref(" << rec.ref_nr << "):\t" << rec.start << " - " << rec.end << "\n";
+        true_bases += std::abs(rec.end - rec.start) + 1;
+
+		for (int i = rec.start; i <= rec.end; ++i)
 			negatives[rec.ref_nr-1][i] = false;
-		}
 	}
 
-	for (unsigned i=0; i < stems; ++i){
-		TStructure const & structure = motif.profile[i];
+    size_t num_stems = motif.profile.size();
+    std::vector<std::vector<bool>> stemsFound(refrec.size(), std::vector<bool>(num_stems, false));
 
+	for (size_t i = 0; i < num_stems; ++i)
+	{
 		/*
 		int test_neg = 0;
 		for (unsigned i=0; i < negatives.size(); ++i){
@@ -1218,30 +1211,33 @@ std::tuple<int, int, int, int, size_t> countStemloopHits(TBidirectionalIndex &in
 		//std::cout <<  structure.pos.first << " " << structure.pos.second << ": " << motif.profile.size() << "\n";
 
 
-		int struclen = structure.pos.second - structure.pos.first + 1;
+		int struclen = motif.profile[i].pos.second - motif.profile[i].pos.first + 1;
 		int minSeed = std::min(struclen, seed_len);
+		std::cout << "minseed " << minSeed << " = min{" << struclen << "," << seed_len << "}\n";
 
-		MotifIterator<TBidirectionalIndex> iter(structure, index, minSeed, freq_threshold);
+		MotifIterator<TBidirectionalIndex> iter(motif.profile[i], index, minSeed, freq_threshold);
+		std::cout << "iterator ready.\n";
 
-		unsigned occ_sum   = 0;
-		unsigned pat_count = 0;
+		size_t occ_sum = 0;
 
-		while (iter.next()){
-			++pat_count;
-
+		while (iter.next())
+		{
 			unsigned occ_count = iter.countOccurrences();
 			auto occs = iter.getOccurrences();
-			occ_sum += occ_count;
+			occ_sum += seqan::length(occs);
+			std::cout << "Occ " << occ_count << " (" << seqan::length(occs) << ")\n";
 
 			//std::pair<int,int> pattern_pos = iter.patternPos();
 
-			for (unsigned j=0; j < seqan::length(occs); ++j){
+			for (unsigned j=0; j < seqan::length(occs); ++j)
+			{
 				const TIndexPosType &pos = seqan::value(occs, j); // := occs[j]
-//				logfile << "ITERATOR_MATCH\t" << i << "\t" << structure.pos.first << "\t" << structure.pos.second
+//				std::cout << "IM\t" << i << "\t" << motif.profile[i].pos.first << "\t" << motif.profile[i].pos.second
 //				        << "\t" << pos.i1 << "\t" << pos.i2 << "\n";
 
 				int count = 0;
-				for (RfamBenchRecord const & rec : refrec){
+				for (RfamBenchRecord const & rec : refrec)
+				{
 					//verify that match region didn't get flagged
 
 					//std::cout << count << " " << i << " " << pos.i1 << " " << pos.i2 << "\n";
@@ -1291,16 +1287,10 @@ std::tuple<int, int, int, int, size_t> countStemloopHits(TBidirectionalIndex &in
 		fn += (stemvec.size() - stems_set);
 	}
 
-//	std::vector<int> result;
-
-	std::cout << tn << "\t" << fp << "\n";
-	std::cout << tp << "\t" << fn << "\n";
-
-//	result.push_back(tn);
-//	result.push_back(fp);
-//	result.push_back(tp);
-//	result.push_back(fn);
-//	result.push_back(refrec.size());
+	std::cout << "tn " << tn << "\t"
+	          << "fp " << fp << "\t"
+	          << "tp " << tp << "\t"
+	          << "fn " << fn << "\n";
 
 //	logfile.close();
 	return std::make_tuple(tn, fp, tp, fn, refrec.size());
@@ -1327,14 +1317,14 @@ std::tuple<int, int, int, int, size_t> countStemloopHits(TBidirectionalIndex &in
 //	}
 //}
 
-template<typename T>
-std::ostream & operator<<(std::ostream & os, std::vector<T> vec)
-{
-    os<<"{ ";
-    std::copy(vec.begin(), vec.end(), std::ostream_iterator<T>(os, " "));
-    os<<"}";
-    return os;
-}
+//template<typename T>
+//std::ostream & operator<<(std::ostream & os, std::vector<T> vec)
+//{
+//    os<<"{ ";
+//    std::copy(vec.begin(), vec.end(), std::ostream_iterator<T>(os, " "));
+//    os<<"}";
+//    return os;
+//}
 
 // scan the hit count vector with a sliding window
 
@@ -1481,17 +1471,18 @@ std::ostream & operator<<(std::ostream & os, std::vector<T> vec)
 //}
 
 template <typename TStringType>
-void findFamilyMatches(seqan::StringSet<TStringType> &seqs,
+void findFamilyMatches(seqan::StringSet<TStringType> & seqs,
                        std::vector<Motif> const & motifs,
                        std::unordered_map<std::string, std::vector<RfamBenchRecord> > const & refrecords,
                        int match_len)
 {
-	//TBidirectionalIndex index(seqs);
+	TBidirectionalIndex index(seqs);
 
 //	std::vector<double> freqs = {0,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2};
-	std::vector<double> freqs = {0.0, 0.1, 0.2};
+	std::vector<double> freqs = {0.2, 0.1, 0.0};
 
-	for (double freq : freqs){
+	for (double freq : freqs)
+	{
 //		std::stringstream fpath;
 //		fpath << motifs[0].header.at("AC") << "_stats_" << freq << ".txt";
 
@@ -1507,15 +1498,17 @@ void findFamilyMatches(seqan::StringSet<TStringType> &seqs,
 			if (motif.seqence_information.empty())
 				continue;
 
-			std::cout << motif.header.at("ID") << "\n";
+			std::string id_str = motif.header.at("ID");
+			std::cout << id_str << "\n";
 
 			//std::cout << motif->seedAlignment << "\n";
-			TBidirectionalIndex index(seqs);
+//			TBidirectionalIndex index(seqs);
 
 			// find the locations of the motif matches
 			//std::cout << motif.header.at("AC") << "\n";
 			//std::vector<TProfileInterval> result = getStemloopPositions(index, motif, threshold);
-			auto result = countStemloopHits(index, motif, match_len, freq, refrecords);
+
+			auto result = countStemloopHits(index, motif, match_len, freq, refrecords.at(id_str));
 
 //			omp_set_lock(&writelock);
 			fout << motif.header.at("ID");

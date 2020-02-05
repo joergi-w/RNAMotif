@@ -128,16 +128,17 @@ typedef seqan::ProfileChar<TBiAlphabet> TBiAlphabetProfile;
 typedef seqan::String<seqan::ProfileChar<TAlphabet> > TLoopProfileString;
 typedef seqan::String<seqan::ProfileChar<TBiAlphabet> > TStemProfileString;
 
-typedef seqan::IntervalAndCargo<long unsigned int, std::shared_ptr<std::vector<bool> > > TProfileCargo;
+//typedef seqan::IntervalAndCargo<long unsigned int, std::shared_ptr<std::vector<bool> > > TProfileCargo;
 typedef seqan::StoredIntervalTree<long unsigned int, std::shared_ptr<std::vector<bool> >, seqan::StoreIntervals> TProfileInterval;
 
 typedef uint32_t THashType;
 const size_t HashTabLength = 1024*1024;
 
 // tolerance for the seach window to account for novel inserts
-const int eps = 10;
+//const int eps = 10;
 
-struct StructureStatistics{
+struct StructureStatistics
+{
 	unsigned min_length;
 	unsigned max_length;
 	double  mean_length;
@@ -146,7 +147,8 @@ struct StructureStatistics{
 
 // Describes a type of secondary structure
 // Stem, Internal Loop, Hairpin Loop
-struct StructureElement{
+struct StructureElement
+{
 	StructureType type;
 	bool loopLeft;
 	int location;
@@ -165,13 +167,14 @@ struct StructureElement{
 	StructureStatistics statistics;
 };
 
-typedef std::vector<std::pair<BracketType, int> > TConsensusStructure;
+typedef std::vector<std::pair<BracketType, int>> TConsensusStructure;
 typedef std::vector<int> TInteractions;
 
 // legacy
-typedef std::vector<std::pair<BracketType, std::pair<int, int> > > TSequenceRegions;
+//typedef std::vector<std::pair<BracketType, std::pair<int, int> > > TSequenceRegions;
 
-typedef struct ProfileStructure{
+typedef struct ProfileStructure
+{
 	int suboptimal = -1;
 
 	BracketType btype;
@@ -184,8 +187,8 @@ typedef struct ProfileStructure{
 	// hairpin, loop, etc. elements of the descriptor
 	std::vector<StructureElement> elements;
 
-	ProfileStructure(BracketType btype, std::pair<int, int> pos)
-		: btype(btype), pos(pos) {};
+//	ProfileStructure(BracketType btype, std::pair<int, int> pos)
+//		: btype(btype), pos(pos) {};
 
 	ProfileStructure(BracketType btype, std::pair<int, int> pos, TInteractions interactions)
 		: btype(btype), pos(pos), interactions(interactions) {};
@@ -195,8 +198,8 @@ typedef std::vector<TStructure> TStemLoopProfile;
 
 struct Motif{
 	// header data, same as the Stockholm header.
-	std::unordered_map<std ::string, std::string > header;
-	std::unordered_map<std::string, std::string > seqence_information;
+	std::unordered_map<std::string, std::string> header;
+	std::unordered_map<std::string, std::string> seqence_information;
 
 	// the consensus interactions for the whole alignment
 	//TInteractionPairs consensusStructure;

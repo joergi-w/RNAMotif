@@ -434,7 +434,7 @@ int main(int argc, char const ** argv)
 		}
 
 		// convert Rfam WUSS structure to normal brackets to get a constraint
-		char *constraint_bracket = NULL;
+		char *constraint_bracket = nullptr;
 		if (options.constrain){
 			constraint_bracket = new char[record.seqence_information.at("SS_cons").length() + 1];
 			WUSStoPseudoBracket(record.seqence_information.at("SS_cons"), constraint_bracket);
