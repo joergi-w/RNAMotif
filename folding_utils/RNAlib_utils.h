@@ -534,7 +534,7 @@ void getConsensusStructure(Motif &motif, seqan::StockholmRecord<TBaseAlphabet> c
     // Find stem loops
     TConsensusStructure consensusStructure;
 	structureToInteractions(structure, consensusStructure);
-	motif.externalBases = getExternal(consensusStructure, motif.seedAlignment);
+//	motif.externalBases = getExternal(consensusStructure, motif.seedAlignment);
 	TStemLoopProfile stemLoops = findStemLoops(consensusStructure);
 
 	for (auto pair : stemLoops){

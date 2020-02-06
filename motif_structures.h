@@ -210,7 +210,7 @@ struct Motif{
 	// the profiles for the individual stem loops
 	TStemLoopProfile profile;
 
-	std::vector<TLoopProfileString> externalBases;
+//	std::vector<TLoopProfileString> externalBases;
 
 	double mcc = 0;
 };

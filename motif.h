@@ -379,44 +379,44 @@ TStemProfileString addProfile(StructureElement &structureElement, unsigned start
 	return profileString;
 }
 
-std::vector<TLoopProfileString> getExternal(TConsensusStructure &consensus, TAlign &align){
-	TLoopProfileString profile;
-	typedef typename seqan::Value<TLoopProfileString>::Type TProfileChar;
-	int aln_len = seqan::length(seqan::row(align,0));
-
-	unsigned i=0;
-
-	while (i < aln_len){
-		std::pair<BracketType, int> b = consensus[i];
- 		int partner = b.second;
-
-		if (partner == -1){
-			TProfileChar profChar;
-			// store the profile of the alignment in [start,end]
-			for (unsigned row=0; row < length(rows(align)); ++row){
-				// create profile of bases in this column
-				unsigned ord_val = seqan::ordValue(seqan::row(align, row)[i]);
-
-				// save gaps as last character in alphabet
-				if (ord_val > seqan::ValueSize<TProfileChar>::VALUE)
-					ord_val = AlphabetSize-1;
-
-				profChar.count[ord_val] += 1;
-			}
-
-			seqan::appendValue(profile, profChar);
-		}
-		else{
-			i = partner;
-		}
-
-		++i;
-	}
-
-	std::vector<TLoopProfileString> ret = {profile};
-
-	return ret;
-}
+//std::vector<TLoopProfileString> getExternal(TConsensusStructure &consensus, TAlign &align){
+//	TLoopProfileString profile;
+//	typedef typename seqan::Value<TLoopProfileString>::Type TProfileChar;
+//	int aln_len = seqan::length(seqan::row(align,0));
+//
+//	unsigned i=0;
+//
+//	while (i < aln_len){
+//		std::pair<BracketType, int> b = consensus[i];
+// 		int partner = b.second;
+//
+//		if (partner == -1){
+//			TProfileChar profChar;
+//			// store the profile of the alignment in [start,end]
+//			for (unsigned row=0; row < length(rows(align)); ++row){
+//				// create profile of bases in this column
+//				unsigned ord_val = seqan::ordValue(seqan::row(align, row)[i]);
+//
+//				// save gaps as last character in alphabet
+//				if (ord_val > seqan::ValueSize<TProfileChar>::VALUE)
+//					ord_val = AlphabetSize-1;
+//
+//				profChar.count[ord_val] += 1;
+//			}
+//
+//			seqan::appendValue(profile, profChar);
+//		}
+//		else{
+//			i = partner;
+//		}
+//
+//		++i;
+//	}
+//
+//	std::vector<TLoopProfileString> ret = {profile};
+//
+//	return ret;
+//}
 
 TStemLoopProfile findStemLoops(TConsensusStructure const &consensus){
 	TStemLoopProfile stemLoops;
