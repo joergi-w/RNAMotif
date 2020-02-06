@@ -130,18 +130,26 @@ class ProfileCharIterImpl : public ProfileCharIter{
 	const uint64_t char_size = seqan::ValueSize<TProfileChar>::VALUE;
 
 	TProfileChar c;
-	std::vector<std::pair<int, int>> gapVals;
+	std::vector<std::pair<int, int>> gapVals; // pair(gap length, gap frequency)
 	int gap_pos = 0;
 
 	int state = 0;
-	std::vector<int> idx;
+	std::array<int, seqan::ValueSize<TProfileChar>::VALUE> idx{};
 	int threshold;
 	bool at_gap = false;
 
 
 public:
-	ProfileCharIterImpl (TProfileChar c, std::map<int, int> const & gapMap, int charNum, std::pair<int,int> pos, int gapsLeft, int offset, THashType prev_hash, bool left, double threshold_freq=0.05)
-							: c(c), idx(char_size) {
+	ProfileCharIterImpl(TProfileChar c,
+	                    std::map<int, int> const & gapMap,
+	                    int charNum,
+	                    std::pair<int,int> pos,
+	                    int gapsLeft,
+	                    int offset,
+	                    THashType prev_hash,
+	                    bool left,
+	                    double threshold_freq = 0.05) : c(c)
+    {
 		this->charNum = charNum;
 		this->pos = pos;
 		this->left = left;
@@ -167,22 +175,19 @@ public:
 		);
 
 		// insert gaps into gapVal vector and sort by value
-		for (auto itr = gapMap.begin(); itr != gapMap.end(); ++itr){
+		gapVals.resize(gapMap.size());
+		std::copy(gapMap.begin(), gapMap.end(), gapVals.begin());
+//		for (auto itr = gapMap.begin(); itr != gapMap.end(); ++itr){
 			// do not include gaps that don't occur often enough or which would exceed
 			// the maximum number of gaps for this section
 			//if (itr->second < threshold || itr->first > gapsLeft)
 			//	continue;
 
-			gapVals.push_back(*itr);
-		}
+//			gapVals.push_back(*itr);
+//		}
 
 		// sort in a way such that shortest gaps get inserted first
-		std::sort(gapVals.begin(), gapVals.end(),
-			[&](std::pair<int, int>& a, std::pair<int, int>& b) {
-				//return a.second > b.second; // sort according to gap frequency
-				return a.first < b.first;     // sort according to gap length
-			}
-		);
+		std::sort(gapVals.begin(), gapVals.end());
 	}
 
 	// get next character. Return characters first, gaps after.
@@ -335,6 +340,9 @@ public:
 	ProfilePointer prof_ptr;
 	bool hashLast;
 
+    std::stack<ProfilePointer> state;
+    std::tuple<int, int, int> end;
+
 	// return the profile pointer of the profile
 	// that corresponds to position pos
 	ProfilePointer next_profile(int offset, bool &duplicate){
@@ -464,62 +472,68 @@ public:
 
 //public:
 	//bool full_pattern = false;
-	uint64_t count;
+//	uint64_t count;
 
-	std::stack<ProfilePointer> state;
-	std::tuple<int, int, int> end;
+	StructureIterator(std::vector<StructureElement> const & elems, int length, bool hashLast, double threshold = 0.05)
+		: structure_elements(elems), max_length(length), threshold_freq(threshold), hashLast(hashLast), end(-1,-1,-1)
+    {
 
-	StructureIterator(std::vector<StructureElement> const & structure_elements, int length, bool hashLast, double threshold_freq=0.05)
-		: structure_elements(structure_elements), max_length(length), threshold_freq(threshold_freq), hashLast(hashLast), end(-1,-1,-1) {
+//		uint64_t sum = 1;
 
-		uint64_t sum = 1;
-		{
-			for (StructureElement elem : structure_elements){
-				int elem_len = seqan::length(elem.loopComponents);
-				//prefix_states.push_back(std::vector<std::unordered_set<std::pair<uint8_t, THashType> > >(elem_len));
-				prefix_states.push_back(std::vector<TPairArray>(elem_len, TPairArray(HashTabLength, TPosHashPair(255,0))));
+        for (StructureElement elem : structure_elements)
+        {
+            int elem_len = seqan::length(elem.loopComponents);
+            //prefix_states.push_back(std::vector<std::unordered_set<std::pair<uint8_t, THashType> > >(elem_len));
+            prefix_states.push_back(std::vector<TPairArray>(elem_len, TPairArray(HashTabLength, TPosHashPair(255,0))));
 
-				for (int i=0; i < elem_len; ++i){
-					//std::cout << i << " " << elem_len << " " << elem.type << "\n";
-					int nonzero = 0;
+//            for (int i=0; i < elem_len; ++i)
+//            {
+//                //std::cout << i << " " << elem_len << " " << elem.type << "\n";
+//                int nonzero = 0;
+//
+//                if (elem.type != StructureType::STEM){
+//                    TAlphabetProfile &pchar = elem.loopComponents[i];
+//                    //std::cout << seqan::totalCount(pchar) << " " << threshold_freq << " - " << seqan::totalCount(pchar)*threshold_freq << "\n";
+//                    int count_ = std::count_if(std::begin(pchar.count), std::end(pchar.count), [&] (int x) {return (x > seqan::totalCount(pchar)*threshold_freq);});
+//                    nonzero = count_;
+//                    std::cout << "No stem: " << count_ << "\n";
+//                }
+//                else {
+//                    TBiAlphabetProfile &pchar = elem.stemProfile[i];
+//                    //std::cout << seqan::totalCount(pchar) << " " << threshold_freq << " - " << seqan::totalCount(pchar)*threshold_freq << "\n";
+//                    int count_ = std::count_if(std::begin(pchar.count), std::end(pchar.count), [&] (int x) {return (x > seqan::totalCount(pchar)*threshold_freq);});
+//                    nonzero = count_;
+//                    std::cout << "Stem   : " << count_ << "\n";
+//                }
+//
+//                sum *= nonzero;
+//                //std::cout << sum <<"\n";
+//            }
+        }
 
-					if (elem.type != StructureType::STEM){
-						TAlphabetProfile &pchar = elem.loopComponents[i];
-						//std::cout << seqan::totalCount(pchar) << " " << threshold_freq << " - " << seqan::totalCount(pchar)*threshold_freq << "\n";
-						int count_ = std::count_if(std::begin(pchar.count), std::end(pchar.count), [&] (int x) {return (x > seqan::totalCount(pchar)*threshold_freq);});
-						nonzero = count_;
-						std::cout << "No stem: " << count_ << "\n";
-					}
-					else {
-						TBiAlphabetProfile &pchar = elem.stemProfile[i];
-						//std::cout << seqan::totalCount(pchar) << " " << threshold_freq << " - " << seqan::totalCount(pchar)*threshold_freq << "\n";
-						int count_ = std::count_if(std::begin(pchar.count), std::end(pchar.count), [&] (int x) {return (x > seqan::totalCount(pchar)*threshold_freq);});
-						nonzero = count_;
-						std::cout << "Stem   : " << count_ << "\n";
-					}
+//        std::cout << "Number of sequences: " << sum << "\n";
 
-					sum *= nonzero;
-					//std::cout << sum <<"\n";
-				}
-			}
 
-			std::cout << "Number of sequences: " << sum << "\n";
-		}
+		element = structure_elements.size() - 1;
+        StructureElement const & last_structure = structure_elements[element];
+		elem_length = seqan::length(last_structure.loopComponents);
+		pos = 0;
+//		this->count = 0;
 
-		//this->structure_elements = structure_elements;
-		this->element = structure_elements.size()-1;
-		this->elem_length = seqan::length(structure_elements[element].loopComponents);
-		this->pos = 0;
-		this->count = 0;
+		intital_pos = std::make_pair(last_structure.location, last_structure.location);
 
-		auto &hairpin = structure_elements[element].loopComponents;
-		this->intital_pos = std::make_pair(structure_elements[element].location, structure_elements[element].location);
+		prof_ptr = ProfilePointer(new TSinglePointer(last_structure.loopComponents[pos], // TProfileChar c
+		                                             last_structure.gap_lengths[pos],    // std::map<int, int> gapMap
+		                                             0,                                  // int charNum
+		                                             intital_pos,                        // std::pair<int,int> pos
+		                                             elem_length - last_structure.statistics.min_length, // int gapsLeft
+		                                             1,                                  // int offset
+		                                             0,                                  // THashType prev_hash
+		                                             false,                              // bool left
+		                                             threshold_freq));
 
-		prof_ptr = ProfilePointer(new TSinglePointer(hairpin[pos], structure_elements[element].gap_lengths[pos], 0,
-								  this->intital_pos, this->elem_length-structure_elements[element].statistics.min_length,
-								  1, 0, false, threshold_freq));
-
-		//std::cout << "INIT gaps " << elem_length << " " << structure_elements[element].statistics[0].min_length << " " << structure_elements[element].statistics[0].max_length << "\n";
+		std::cout << "INIT gaps " << elem_length << " " << last_structure.statistics.min_length
+		          << " " << last_structure.statistics.max_length << "\n";
 	}
 
 	std::tuple<int, int, int> make_return_char(int next_char_val, int backtracked, bool single_type){
@@ -803,7 +817,7 @@ public:
 
 		//std::cout << "Skipping\n";
 
-		count++;
+//		count++;
 
 		int backtracked;
 		std::tie(backtracked, prof_ptr) = this->prev_profile();

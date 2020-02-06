@@ -576,8 +576,8 @@ void partitionStemLoop(TAlign &seedAlignment, TStructure &stemStructure){
 		}
 		// if unpaired, count the length of the loop and check for a bulge
 		else if (right == -1){
-			StructureElement structure;
-			StructureElement structure2;
+			StructureElement structure{};
+			StructureElement structure2{};
 			bool struc2_set = false;
 
 			// get right border bracket of other half of loop (->(...(..)...)<=)
