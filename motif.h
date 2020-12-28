@@ -491,6 +491,15 @@ TStemLoopProfile findStemLoops(TConsensusStructure const &consensus){
 			};
 		}
 	}
+	for (auto & sl : stemLoops)
+    {
+	    std::cout << "Stem Loop " << (int)sl.btype << " " << sl.pos.first << " " << sl.pos.second << " (";
+	    for (int inter : sl.interactions)
+        {
+	        std::cout << inter << " ";
+        }
+	    std::cout << ")\n";
+    }
 	return stemLoops;
 }
 
